@@ -4,7 +4,7 @@
 	"title": "Active Token Lighting",
 	"description": "Active Token Lighting",
 	"author": "Kandashi",
-	"version": "0.0.2",
+	"version": "0.0.21",
 	"systems": ["dnd5e"],
 	"minimumCoreVersion": "0.7.5",
 	"compatibleCoreVersion": "0.7.9",
@@ -12,6 +12,6 @@
 		"src/activeLighting.js"
 	],
 	 "url": "https://github.com/kandashi/Active-Token-Lighting",
-         "manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/src/module.json",
+         "manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",
 	"download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip"
 }
