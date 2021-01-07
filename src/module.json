@@ -11,7 +11,7 @@
 	"scripts": [
 		"src/activeLighting.js"
 	],
-	 "url": "https://github.com/kandashi/Active-Auras",
-         "manifest": "https://raw.githubusercontent.com/kandashi/Active-Auras/main/module.json",
-	"download": "https://github.com/kandashi/Active-Auras/archive/main.zip"
+	 "url": "https://github.com/kandashi/Active-Token-Lighting",
+         "manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/src/module.json",
+	"download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip"
 }
