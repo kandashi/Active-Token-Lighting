@@ -25,7 +25,7 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
 
 ![Torch config](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Torch%20config.PNG)
 ![Goggles of Night config](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Goggles%20of%20Night%20config.PNG)
-![Active Lighting](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Active%20Token%20Lighting%20Demo.webm?raw=true)
+![Active Lighting](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Active%20Token%20Lighting%20Demo.gif?raw=true)
 
 ## Modes
 - Add will only add onto a current existing ATL flag, not onto the existing actor vision
