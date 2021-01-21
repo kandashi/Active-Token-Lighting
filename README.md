@@ -2,7 +2,24 @@
 
 
 Active Token Lighting will dynamicly adjust token light settings based on active effects present on the actor. 
-You can use the syntax `flags.ATL.lighting.dimLight/brightLight/dimSight/brightSight` as the attribute key. 
+You can use the syntax `flags.ATL.lighting.X` as the attribute key. 
+X can be:
+- dimLight
+- brightLight
+- dimSight
+- brightSight
+- sightAngle
+- lightColor
+- colorIntensity
+- lightAngle
+- lightEffect (for this enter an object as the value, eg. `{"type":"torch","speed":1,"intensity":1}` )
+
+To adjust token size you can use `flags.ATL.size.X` where X can be:
+- height
+- width
+- scale
+
+There are 3 preset values for torch, lantern and candle. Use `flags.ATL.lighting.preset` and value of the name in lowercase `torch`, `lantern`, `candle`. These will override custom values set in other flags.
 
 Works very well alongside DAE for equip-toggle effects (Goggles of Night for example) or with Midi QoL for consumables (like torches)
 
@@ -52,8 +69,6 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
             };
             colorIntensity = "0.2"
 
-- Use `flags.ATL.lighting.preset` and value of the name in lowercase `torch`, `lantern`, `candle`
-- Preset values will override custom inputs with ATL
 
 ## Upcoming
 - Different presets based on game system values
