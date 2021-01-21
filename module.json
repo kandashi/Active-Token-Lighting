@@ -4,12 +4,21 @@
 	"title": "Active Token Lighting",
 	"description": "Active Token Lighting",
 	"author": "Kandashi",
-	"version": "0.0.33",
+	"version": "0.1.0",
 	"systems": ["dnd5e"],
 	"minimumCoreVersion": "0.7.5",
 	"compatibleCoreVersion": "0.7.9",
 	"scripts": [
 		"src/activeLighting.js"
+	],
+	"packs":[
+		{
+			"name": "Token Lighting Premade",
+			"label": "Token Lighting premade",
+			"path" : "packs/premade",
+			"entity": "Item",
+			"module": "ATL"
+		}
 	],
 	 "url": "https://github.com/kandashi/Active-Token-Lighting",
          "manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",

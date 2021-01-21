@@ -15,3 +15,45 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
 - Upgrade will do as expected
 - Override will only override other ATL flags, not the actor default
 - Custom and Multiply do not work
+
+
+## Presets
+- 3 preset values 
+-  Torch
+            dimLight = "40";
+            brightLight = "20";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            }
+            colorIntensity = "0.4"
+
+- Lantern"
+            dimLight = "60";
+            brightLight = "30";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            };
+            colorIntensity = "0.4"
+        
+- Candle
+            dimLight = "10";
+            brightLight = "2";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            };
+            colorIntensity = "0.2"
+
+- Use `flags.ATL.lighting.preset` and value of the name in lowercase `torch`, `lantern`, `candle`
+- Preset values will override custom inputs with ATL
+
+## Upcoming
+- Different presets based on game system values
