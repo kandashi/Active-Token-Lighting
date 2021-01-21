@@ -21,68 +21,100 @@ Hooks.on("preUpdateToken", (scene, token, update) => {
 })
 
 
+
+
 function ReadUpdate(actorId, effect) {
     let gm = game.user === game.users.find((u) => u.isGM && u.active)
     if (!gm) return;
     setTimeout(() => {
         let actor = game.actors.get(actorId)
-        let flag = actor.getFlag('ATL', 'lighting')
-        let lightUpdate = false;
+        const LightFlag = actor.getFlag('ATL', 'lighting')
+        const SizeFlag = actor.getFlag('ATL', 'size')
+        let ATLUpdate = false;
         let tokenData = actor.data.token
         for (let change of effect.changes) {
-            if (change.key.includes("ATL")) lightUpdate = true
+            if (change.key.includes("ATL")) ATLUpdate = true
         }
-        if (lightUpdate === false) return;
+        if (ATLUpdate === false) return;
         let token = actor.getActiveTokens()[0];
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, size, scale } = flag !== undefined ? flag : 0;
-        if (typeof dimLight !== "string") dimLight = 0;
-        if (typeof brightLight !== "string") brightLight = 0
-        if (typeof dimSight !== "string") dimSight = 0
-        if (typeof brightSight !== "string") brightSight = 0
-        if (typeof sightAngle !== "string") sightAngle = 360
-        if (typeof lightColor !== "string") lightColor = ""
-        if (typeof lightEffect !== "string") lightEffect = tokenData.lightAnimation.type
-        if (typeof colorIntensity !== "string") colorIntensity = tokenData.lightAlpha
-        if (typeof size !== "string") size = tokenData.height
-        if (typeof scale !== "string") scale = tokenData.scale
-
-
-        let newDimLight = tokenData.dimLight > dimLight ? tokenData.dimLight : dimLight;
-        let newBrightLight = tokenData.brightLight > brightLight ? tokenData.brightLight : brightLight;
-        let newDimSight = tokenData.dimSight > dimSight ? tokenData.dimSight : dimSight;
-        let newBrightSight = tokenData.brightSight > brightSight ? tokenData.brightSight : brightSight;
-        let newSightAngle = tokenData.sightAngle > sightAngle ? sightAngle : tokenData.sightAngle;
-        let lightAnimation;
-        if(lightEffect === "") lightAnimation = tokenData.lightAnimation
-        else lightAnimation = JSON.parse(lightEffect)
-
-        token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), height: size, width: size, scale: scale })
-    }, 10)
+            performUpdate(token, LightFlag, SizeFlag, tokenData)
+    }, 20)
 }
 
-function ReadUpdateUnlinked(tokenId, effect, token) {
+
+
+function ReadUpdateUnlinked(tokenId, effect) {
     if (effect.length < 1) return;
     let gm = game.user === game.users.find((u) => u.isGM && u.active)
     if (!gm) return;
     setTimeout(() => {
         let token = canvas.tokens.get(tokenId)
         let actor = token.actor
-        let flag = actor.getFlag('ATL', 'lighting')
-        let lightUpdate = false;
+        let tokenData = actor.data.token
+        const LightFlag = actor.getFlag('ATL', 'lighting')
+        const SizeFlag = actor.getFlag('ATL', 'size')
+        let ATLUpdate = false;
         for (let change of effect[0].changes) {
-            if (change.key.includes("ATL")) lightUpdate = true; break;
+            if (change.key.includes("ATL")) ATLUpdate = true; break;
         }
 
-        if (lightUpdate === false) return;
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, animationSpeed, animationIntensity } = flag !== undefined ? flag : 0;
-        if (typeof dimLight !== "string") dimLight = 0;
-        if (typeof brightLight !== "string") brightLight = 0
-        if (typeof dimSight !== "string") dimSight = 0
-        if (typeof brightSight !== "string") brightSight = 0
-        if (typeof sightAngle !== "string") sightAngle = 360
-        if (typeof lightColor !== "string") lightColor = ""
-        if (typeof lightEffect !== "string") lightEffect = tokenData.lightAnimation.type
-        if (typeof colorIntensity !== "string") colorIntensity = tokenData.lightAlpha
+        if (ATLUpdate === false) return;
+        performUpdate(token, LightFlag, SizeFlag, tokenData)
+    }, 10)
+}
+
+function performUpdate(token, LightFlag, SizeFlag, tokenData) {
+
+
+    let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = LightFlag !== undefined ? LightFlag : 0;
+
+        if (LightFlag?.preset === 'torch') {
+            dimLight = "40";
+            brightLight = "20";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            };
+            colorIntensity = "0.4"
+        }
+        if (LightFlag?.preset === "lantern") {
+            dimLight = "60";
+            brightLight = "30";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            };
+            colorIntensity = "0.4"
+        }
+        if (LightFlag?.preset === "candle") {
+            dimLight = "10";
+            brightLight = "2";
+            lightColor = "#a2642a";
+            lightEffect = {
+                'type': 'torch',
+                'speed': 1,
+                'intensity': 1
+            };
+            colorIntensity = "0.2"
+        }
+
+        if (dimLight === undefined) dimLight = 0;
+        if (brightLight === undefined) brightLight = 0
+        if (dimSight === undefined) dimSight = 0
+        if (brightSight === undefined) brightSight = 0
+        if (sightAngle === undefined) sightAngle = 360
+        if (lightColor === undefined ) lightColor = ""
+        if (lightAngle === undefined ) lightAngle = 360
+        if (lightEffect === undefined && !LightFlag?.preset) lightEffect = tokenData.lightAnimation.type
+        if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
+
+        let { size, scale } = SizeFlag !== undefined ? SizeFlag : 0;
+        if (size === undefined) size = tokenData.height
+        if (scale === undefined) scale = tokenData.scale
 
 
         let newDimLight = tokenData.dimLight > dimLight ? tokenData.dimLight : dimLight;
@@ -91,10 +123,12 @@ function ReadUpdateUnlinked(tokenId, effect, token) {
         let newBrightSight = tokenData.brightSight > brightSight ? tokenData.brightSight : brightSight;
         let newSightAngle = tokenData.sightAngle > sightAngle ? sightAngle : tokenData.sightAngle;
         let lightAnimation;
-        if(lightEffect === "") lightAnimation = tokenData.lightAnimation
+
+        if (lightEffect === "") lightAnimation = tokenData.lightAnimation
+        else if (LightFlag?.preset) lightAnimation = lightEffect;
         else lightAnimation = JSON.parse(lightEffect)
 
+        token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), height: size, width: size, scale: scale, lightAngle: lightAngle })
 
-        token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), })
-    }, 10)
 }
+
