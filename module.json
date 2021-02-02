@@ -4,7 +4,7 @@
 	"title": "Active Token Lighting",
 	"description": "Active Token Lighting",
 	"author": "Kandashi",
-	"version": "0.1.12",
+	"version": "0.1.13",
 	"systems": ["dnd5e"],
 	"minimumCoreVersion": "0.7.5",
 	"compatibleCoreVersion": "0.7.9",

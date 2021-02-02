@@ -70,5 +70,13 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
             colorIntensity = "0.2"
 
 
-## Upcoming
-- Different presets based on game system values
+## Altering presets or adding new ones
+- You can now add to; remove, or alter the existing presets
+- 3 macro/console commands :
+    - ATLAddPreset() takes 2 arguments, the name of the preset to add and the obeject to add
+    - ATLRemovePreset() takes the name of the preset to be removed
+    - ATLGeneratePreset() will open a dialog to create a new preset
+- Use the presets in the same way with `flags.ATL.lighting.preset` with a value of the preset name
+
+## Complications
+- At the moment `flags.ATL.lighting.lightEffect` will not correctly apply if this effect is applied through Midi QoL

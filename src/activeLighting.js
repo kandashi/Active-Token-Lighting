@@ -7,7 +7,54 @@ Hooks.on('init', () => {
         default: false,
         type: Boolean,
     });
+    game.settings.register("ATL", "presets", {
+        name: "Size Adjustment with Flags",
+        hint: "Allow for size adjustment to be made with flags, alwasy returns tokens to prototype token defaults is flag is not present",
+        scope: "world",
+        config: false,
+        default: defaultPresets,
+        type: Object,
+    })
 })
+
+let defaultPresets = [
+    {
+        name: "torch",
+        dimLight: "40",
+        brightLight: "20",
+        lightColor: "#a2642a",
+        lightEffect: {
+            'type': 'torch',
+            'speed': 1,
+            'intensity': 1
+        },
+        colorIntensity: "0.4"
+    },
+    {
+        name: "lantern",
+        dimLight: "60",
+        brightLight: "30",
+        lightColor: "#a2642a",
+        lightEffect: {
+            'type': 'torch',
+            'speed': 1,
+            'intensity': 1
+        },
+        colorIntensity: "0.4"
+    },
+    {
+        name: "candle",
+        dimLight: "10",
+        brightLight: "2",
+        lightColor: "#a2642a",
+        lightEffect: {
+            'type': 'torch',
+            'speed': 1,
+            'intensity': 1
+        },
+        colorIntensity: "0.2"
+    }
+]
 
 Hooks.on("updateActiveEffect", async (entity, effect, options) => {
     if (entity.data.type === "character") {
@@ -57,7 +104,11 @@ Hooks.on("preUpdateToken", (scene, token, update) => {
 })
 
 
+let ATLMap = new Map()
 
+Hooks.on("ready", () => {
+
+})
 
 function ReadUpdate(actorId, effect) {
     let gm = game.user === game.users.find((u) => u.isGM && u.active)
@@ -92,41 +143,15 @@ function ReadUpdateUnlinked(tokenId) {
 function performUpdate(token, LightFlag, SizeFlag, tokenData) {
 
 
-    let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = LightFlag !== undefined ? LightFlag : 0;
 
-    if (LightFlag?.preset === 'torch') {
-        dimLight = "40";
-        brightLight = "20";
-        lightColor = "#a2642a";
-        lightEffect = {
-            'type': 'torch',
-            'speed': 1,
-            'intensity': 1
-        };
-        colorIntensity = "0.4"
+    if (LightFlag?.preset) {
+        let presetArray = game.settings.get("ATL", "presets")
+        let preset = presetArray.find(i => i.name === LightFlag.preset)
+        var { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = preset;
     }
-    if (LightFlag?.preset === "lantern") {
-        dimLight = "60";
-        brightLight = "30";
-        lightColor = "#a2642a";
-        lightEffect = {
-            'type': 'torch',
-            'speed': 1,
-            'intensity': 1
-        };
-        colorIntensity = "0.4"
-    }
-    if (LightFlag?.preset === "candle") {
-        dimLight = "10";
-        brightLight = "2";
-        lightColor = "#a2642a";
-        lightEffect = {
-            'type': 'torch',
-            'speed': 1,
-            'intensity': 1
-        };
-        colorIntensity = "0.2"
-    }
+    else var { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = LightFlag !== undefined ? LightFlag : 0;
+
+
     if (lightAngle) lightAngle = parseInt(lightAngle);
     if (sightAngle) sightAngle = parseInt(sightAngle);
 
@@ -137,7 +162,6 @@ function performUpdate(token, LightFlag, SizeFlag, tokenData) {
     if (sightAngle === undefined) sightAngle = 360
     if (lightColor === undefined) lightColor = ""
     if (lightAngle === undefined) lightAngle = 360
-    if (lightEffect === undefined && !LightFlag?.preset) lightEffect = tokenData.lightAnimation.type
     if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
 
 
@@ -164,4 +188,174 @@ function performUpdate(token, LightFlag, SizeFlag, tokenData) {
         token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), lightAngle: lightAngle })
 
 }
+
+function ATLAddPreset(name, object) {
+    if (!name) {
+        ui.notifications.error("Please provide a name for the preset")
+        return;
+    }
+    if (!object) {
+        ui.notifications.error("Please provide data for the preset")
+        return;
+    }
+    let presets = game.settings.get("ATL", "presets");
+    let duplicate = presets.find(i => i.name === object.name)
+    if (duplicate) {
+        let index = presets.indexOf(duplicate)
+        if (index > -1) {
+            presets.splice(index, 1)
+        }
+        presets.push(object)
+        new Dialog({
+            content: `${object.name} is already a preset, confirm overwrite`,
+            buttons: {
+                one: {
+                    label: "OK",
+                    callback: () => {
+                        game.settings.set("ATL", "presets", presets)
+                    }
+                },
+                two: {
+                    label: "Return"
+                }
+            }
+        }).render(true)
+    }
+    else {
+        presets.push(object)
+        game.settings.set("ATL", "presets", presets)
+    }
+}
+function ATLRemovePreset(name) {
+    if (!name) {
+        ui.notifications.error("Please provide a name for the preset")
+        return;
+    }
+    let presets = game.settings.get("ATL", "presets");
+    let removePreset = presets.find(i => i.name === name)
+    if (!removePreset) {
+        ui.notifications.error("No preset with that name exists")
+        return;
+    }
+    let index = presets.indexOf(removePreset)
+    if (index > -1) {
+        presets.splice(index, 1)
+        ui.notifications.notify(`${removePreset.name} was removed from the presets`)
+    }
+    game.settings.set("ATL", "presets", presets)
+}
+
+function ATLGeneratePreset() {
+    new Dialog({
+        content: `
+        <form>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+           
+                    <label for="name"> Preset Name: </label>
+                    <input id="name" name="name" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+
+                    <label for="dimLight"> Dim Light: </label>
+                    <input id="dimLight" name="dimLight" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="brightLight"> Bright Light: </label>
+                    <input id="brightLight" name="brightLight" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="dimSight"> Dim Sight: </label>
+                    <input id="dimSight" name="dimSight" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="brightSight"> Bright Sight: </label>
+                    <input id="brightSight" name="brightSight" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="lightAngle"> Light Angle: </label>
+                    <input id="lightAngle" name="lightAngle" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="sightAngle"> Sight Angle: </label>
+                    <input id="sightAngle" name="sightAngle" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                <label for="lightAlpha"> Light Intensity (0-1): </label>
+                <input id="lightAlpha" name="lightAlpha" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                <label for="lightColor"> Light Color: </label>
+                <input id="lightColor" name="lightColor" type="text"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                <label for="animationType"> Animation Type: </label>
+                <select id="animationType" name="animationType" >
+                    <option value="torch"> Torch</option>
+                    <option value="pulse"> Pulse</option>
+                    <option value="chroma"> Chroma</option>
+                    <option value="wave"> Pulsing Wave</option>
+                    <option value="fog"> Swirling Fog</option>
+                    <option value="sunburst"> Sunburst</option>
+                    <option value="dome"> Light Dome</option>
+                    <option value="emanation"> Mysterious Emanation</option>
+                    <option value="hexa"> Hexa Dome</option>
+                    <option value="ghost"> Ghostly Light</option>
+                    <option value="energy"> Energy Field</option>
+                    <option value="roiling"> Roiling Mass (Darkness)</option>
+                    <option value="hole"> Black Hole (Darkness)</option>
+                </select>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="animationSpeed"> Animation Speed (1-10): </label>
+                    <input id="animationSpeed" name="animationSpeed" type="number" min="0" max="1"></input>
+            </div>
+            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
+                    <label for="animationIntensity"> Animation Intensity (1-10): </label>
+                    <input id="animationIntensity" name="animationIntensity" type="number" min="0" max="1"></input>
+            </div>
+                `,
+        buttons: {
+            one: {
+                label: "Add Preset",
+                callback: (html) => {
+                    let name = html.find("#name")[0].value
+                    let dimLight = html.find("#dimLight")[0].value
+                    let brightLight = html.find("#brightLight")[0].value
+                    let dimSight = html.find("#dimSight")[0].value
+                    let brightSight = html.find("#brightSight")[0].value
+                    let lightColor = html.find("#lightColor")[0].value
+                    let sightAngle = html.find("#sightAngle")[0].value
+                    let lightAlpha = html.find("#lightAlpha")[0].value
+                    let lightAngle = html.find("#lightAngle")[0].value
+                    let animationType = html.find("#animationType")[0].value
+                    let animationSpeed = html.find("#animationSpeed")[0].value
+                    let animationIntensity = html.find("#animationIntensity")[0].value
+
+                    let object = {
+                        name: name,
+                        dimLight: dimLight,
+                        brightLight: brightLight,
+                        lightColor: lightColor,
+                        lightEffect: {
+                            'type': animationType,
+                            'speed': animationSpeed,
+                            'intensity': animationIntensity
+                        },
+                        colorIntensity: lightAlpha,
+                        dimSight: dimSight,
+                        brightSight: brightSight,
+                        sightAngle: sightAngle,
+                        lightAngle: lightAngle
+                    }
+                    ATLAddPreset(name, object)
+                }
+            },
+            two: {
+                label: "Cancel",
+            }
+        }
+
+    }).render(true)
+}
+
 
