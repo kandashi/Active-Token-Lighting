@@ -247,6 +247,7 @@ function ATLRemovePreset(name) {
 
 function ATLGeneratePreset() {
     new Dialog({
+        name: "ATL Preset setter",
         content: `
         <form>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
