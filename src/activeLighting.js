@@ -70,7 +70,7 @@ class ATL {
                     if (change.key.includes("ATL")) ATLUpdate = true
                 }
                 if (ATLUpdate === false) return;
-                ReadUpdate(entity.id, effect)
+                ATL.ReadUpdate(entity.id, effect)
             }
         })
 
@@ -80,7 +80,7 @@ class ATL {
                 if (change.key.includes("ATL")) ATLUpdate = true
             }
             if (ATLUpdate === false) return;
-            ReadUpdate(actor.id, effect)
+            ATL.ReadUpdate(actor.id, effect)
         })
 
         Hooks.on("deleteActiveEffect", async (actor, effect, options) => {
@@ -89,7 +89,7 @@ class ATL {
                 if (change.key.includes("ATL")) ATLUpdate = true
             }
             if (ATLUpdate === false) return;
-            ReadUpdate(actor.id, effect)
+            ATL.ReadUpdate(actor.id, effect)
         })
 
         Hooks.on("preUpdateToken", (scene, token, update) => {
@@ -107,7 +107,7 @@ class ATL {
             }
 
             if (ATLUpdate === false) return;
-            ReadUpdateUnlinked(token._id)
+            ATL.ReadUpdateUnlinked(token._id)
         })
     }
 
@@ -123,7 +123,7 @@ class ATL {
             const SizeFlag = actor.getFlag('ATL', 'size')
 
             let token = actor.getActiveTokens()[0];
-            performUpdate(token, LightFlag, SizeFlag, actor.data.token)
+            ATL.performUpdate(token, LightFlag, SizeFlag, actor.data.token)
         }, 20)
     }
 
@@ -140,7 +140,7 @@ class ATL {
             const SizeFlag = actor.getFlag('ATL', 'size')
 
 
-            performUpdate(token, LightFlag, SizeFlag, tokenData)
+            ATL.performUpdate(token, LightFlag, SizeFlag, tokenData)
         })
     }
 
@@ -253,7 +253,14 @@ class ATL {
 
         let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle, name } = preset ? preset : 0
         if (!name) name = "";
-        if (!lightAngle) lightAngle = 360;
+        if (dimLight === undefined) dimLight = 0;
+        if (brightLight === undefined) brightLight = 0
+        if (dimSight === undefined) dimSight = 0
+        if (brightSight === undefined) brightSight = 0
+        if (sightAngle === undefined) sightAngle = 360
+        if (lightColor === undefined) lightColor = ""
+        if (lightAngle === undefined) lightAngle = 360
+        if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
         new Dialog({
             title: "ATL Light Editor",
             content: `
@@ -299,20 +306,20 @@ class ATL {
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="animationType"> Animation Type: </label>
                 <select id="animationType" name="animationType" >
-                    <option selected hidden> Choose Effect</option>
-                    <option value="torch"> Torch</option>
-                    <option value="pulse"> Pulse</option>
-                    <option value="chroma"> Chroma</option>
-                    <option value="wave"> Pulsing Wave</option>
-                    <option value="fog"> Swirling Fog</option>
-                    <option value="sunburst"> Sunburst</option>
-                    <option value="dome"> Light Dome</option>
-                    <option value="emanation"> Mysterious Emanation</option>
-                    <option value="hexa"> Hexa Dome</option>
-                    <option value="ghost"> Ghostly Light</option>
-                    <option value="energy"> Energy Field</option>
-                    <option value="roiling"> Roiling Mass (Darkness)</option>
-                    <option value="hole"> Black Hole (Darkness)</option>
+                    <option selected value="none"> Choose Effect</option>
+                    <option value="torch" ${lightEffect.type === "torch" ? 'selected' : ''}> Torch</option>
+                    <option value="pulse" ${lightEffect.type === "pulse" ? 'selected' : ''}> Pulse</option>
+                    <option value="chroma" ${lightEffect.type === "chroma" ? 'selected' : ''}> Chroma</option>
+                    <option value="wave" ${lightEffect.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
+                    <option value="fog" ${lightEffect.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
+                    <option value="sunburst" ${lightEffect.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
+                    <option value="dome" ${lightEffect.type === "dome" ? 'selected' : ''}> Light Dome</option>
+                    <option value="emanation" ${lightEffect.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
+                    <option value="hexa" ${lightEffect.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
+                    <option value="ghost" ${lightEffect.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
+                    <option value="energy" ${lightEffect.type === "energy" ? 'selected' : ''}> Energy Field</option>
+                    <option value="roiling" ${lightEffect.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
+                    <option value="hole" ${lightEffect.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>
                 </select>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
@@ -327,6 +334,7 @@ class ATL {
             buttons: {
                 one: {
                     label: "Add Preset",
+                    icon: `<i class="fas fa-check"></i>`,
                     callback: (html) => {
                         let id = randomID()
                         let name = html.find("#name")[0].value
@@ -359,11 +367,12 @@ class ATL {
                             lightAngle: lightAngle,
                             id: id
                         }
-                        ATLAddPreset(name, object)
+                        ATL.AddPreset(name, object)
                     }
                 },
                 two: {
                     label: "Cancel",
+                    icon: `<i class="fas fa-undo-alt"></i>`,
                 }
             }
 
@@ -378,19 +387,22 @@ class ATL {
             content: `
         <div class="form group">
         <label> Presets: </label>
-        ${content}`,
+        ${content}
+        </div>`,
             content,
             buttons: {
                 one: {
                     label: "Update",
+                    icon: `<i class="fas fa-edit"></i>`,
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
                         let preset = presets.find(p => p.id === updatePreset)
-                        ATLGeneratePreset(preset)
+                        ATL.GeneratePreset(preset)
                     }
                 },
                 two: {
                     label: "Delete",
+                    icon: `<i class="fas fa-trash-alt"></i>`,
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
                         let preset = presets.find(p => p.id === updatePreset)
@@ -402,12 +414,14 @@ class ATL {
                             buttons: {
                                 one: {
                                     label: "Confirm",
+                                    icon: `<i class="fas fa-check"></i>`,
                                     callback: () => {
                                         game.settings.set("ATL", "presets", presets)
                                     }
                                 },
                                 two: {
                                     label: "Return",
+                                    icon: `<i class="fas fa-undo-alt"></i>`,
                                     callback: presetSelector
                                 }
                             }
@@ -416,9 +430,10 @@ class ATL {
                 },
                 three: {
                     label: "Add New",
+                    icon: `<i class="fas fa-plus"></i>`,
                     callback: () => {
 
-                        ATLGeneratePreset()
+                        ATL.GeneratePreset()
                     }
                 }
             }
