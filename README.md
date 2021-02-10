@@ -72,10 +72,12 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
 
 ## Altering presets or adding new ones
 - You can now add to; remove, or alter the existing presets
-- 3 macro/console commands :
-    - ATLAddPreset() takes 2 arguments, the name of the preset to add and the obeject to add
-    - ATLRemovePreset() takes the name of the preset to be removed
-    - ATLGeneratePreset() will open a dialog to create a new preset
+- In the lighting menu is a plus button to trigger the UpdatePresets command from below
+- 4 macro/console commands :
+    - ATL.AddPreset() takes 2 arguments, the name of the preset to add and the obeject to add
+    - ATL.RemovePreset() takes the name of the preset to be removed
+    - ATL.GeneratePreset() will open a dialog to create a new preset
+    - ATL.UpdatePresets() will open a dialog to edit,delete,add presets
 - Use the presets in the same way with `flags.ATL.lighting.preset` with a value of the preset name
 
 ## Complications
