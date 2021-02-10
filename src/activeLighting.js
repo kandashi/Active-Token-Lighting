@@ -249,10 +249,16 @@ class ATL {
         game.settings.set("ATL", "presets", presets)
     }
 
-    static GeneratePreset(preset) {
+    static GeneratePreset(preset, copy) {
 
         let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle, name } = preset ? preset : 0
-        if (!name) name = "";
+        switch(copy){
+            case true: name = `${name} (copy)`;
+            break;
+            case false: name = name;
+            break;
+            default: name = ""
+        }
         if (dimLight === undefined) dimLight = 0;
         if (brightLight === undefined) brightLight = 0
         if (dimSight === undefined) dimSight = 0
@@ -260,7 +266,8 @@ class ATL {
         if (sightAngle === undefined) sightAngle = 360
         if (lightColor === undefined) lightColor = ""
         if (lightAngle === undefined) lightAngle = 360
-        if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
+        if (colorIntensity === undefined) colorIntensity = 1
+        if (lightEffect === undefined) lightEffect = {}
         new Dialog({
             title: "ATL Light Editor",
             content: `
@@ -306,7 +313,7 @@ class ATL {
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="animationType"> Animation Type: </label>
                 <select id="animationType" name="animationType" >
-                    <option selected value="none"> Choose Effect</option>
+                    <option selected value="none"> None</option>
                     <option value="torch" ${lightEffect.type === "torch" ? 'selected' : ''}> Torch</option>
                     <option value="pulse" ${lightEffect.type === "pulse" ? 'selected' : ''}> Pulse</option>
                     <option value="chroma" ${lightEffect.type === "chroma" ? 'selected' : ''}> Chroma</option>
@@ -327,7 +334,7 @@ class ATL {
                     <input id="animationSpeed" name="animationSpeed" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.speed}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="animationIntensity"> Animation Intensity (1-10): </label>
+                    <label for="animationIntensity"> Animation Intensity: </label>
                     <input id="animationIntensity" name="animationIntensity" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.intensity}"></input>
             </div>
                 `,
@@ -397,10 +404,19 @@ class ATL {
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
                         let preset = presets.find(p => p.id === updatePreset)
-                        ATL.GeneratePreset(preset)
+                        ATL.GeneratePreset(preset, false)
                     }
                 },
                 two: {
+                    label: "Create Copy",
+                    icon: `<i class="fas fa-copy"></i>`,
+                    callback: (html) => {
+                        let updatePreset = html.find("[name=presets]")[0].value;
+                        let preset = presets.find(p => p.id === updatePreset)
+                        ATL.GeneratePreset(preset, true)
+                    }
+                },
+                three: {
                     label: "Delete",
                     icon: `<i class="fas fa-trash-alt"></i>`,
                     callback: (html) => {
@@ -428,7 +444,7 @@ class ATL {
                         }).render(true)
                     }
                 },
-                three: {
+                four: {
                     label: "Add New",
                     icon: `<i class="fas fa-plus"></i>`,
                     callback: () => {
