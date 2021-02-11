@@ -1,7 +1,7 @@
 # Active-Token-Lighting
 
 
-Active Token Lighting will dynamicly adjust token light settings based on active effects present on the actor. 
+Active Token Lighting will dynamically adjust token light settings based on active effects present on the actor. 
 You can use the syntax `flags.ATL.lighting.X` as the attribute key. 
 X can be:
 - dimLight
