@@ -27,7 +27,7 @@ class ATL {
                 },
                 colorIntensity: "0.4",
                 id: "ATLPresetLantern"
-    
+
             },
             {
                 name: "candle",
@@ -41,7 +41,7 @@ class ATL {
                 },
                 colorIntensity: "0.2",
                 id: "ATLPresetCandle"
-    
+
             }
         ]
         game.settings.register("ATL", "size", {
@@ -94,15 +94,18 @@ class ATL {
 
         Hooks.on("preUpdateToken", (scene, token, update) => {
             if (!(update.actorData?.effects)) return
-            let removed = token.actorData.effects.filter(x => !update.actorData.effects.includes(x));
-            let added = update.actorData.effects.filter(x => !token.actorData.effects.includes(x));
+            let removed = token.actorData?.effects?.filter(x => !update.actorData?.effects?.includes(x));
+            let added = update.actorData?.effects?.filter(x => !token.actorData?.effects?.includes(x));
             let effects = []
-            added.forEach(i => effects.push(i))
-            removed.forEach(i => effects.push(i))
+            if (added) added.forEach(i => effects.push(i))
+            if (removed) removed.forEach(i => effects.push(i))
             let ATLUpdate = false;
             for (let testEffect of effects) {
                 for (let change of testEffect.changes) {
-                    if (change.key.includes("ATL")) ATLUpdate = true; break;
+                    if (change.key.includes("ATL")) {
+                        ATLUpdate = true;
+                        break;
+                    }
                 }
             }
 
@@ -132,7 +135,8 @@ class ATL {
     static ReadUpdateUnlinked(tokenId) {
         let gm = game.user === game.users.find((u) => u.isGM && u.active)
         if (!gm) return;
-        Hooks.once("updateToken", () => {
+        let ATLHookId = Hooks.on("updateToken", (scene, token1, update) => {
+            if (token1._id !== tokenId) return;
             let token = canvas.tokens.get(tokenId);
             let actor = token.actor;
             let tokenData = actor.data.token;
@@ -141,6 +145,7 @@ class ATL {
 
 
             ATL.performUpdate(token, LightFlag, SizeFlag, tokenData)
+            Hooks.off("updateToken", ATLHookId)
         })
     }
 
@@ -252,11 +257,11 @@ class ATL {
     static GeneratePreset(preset, copy) {
 
         let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle, name } = preset ? preset : 0
-        switch(copy){
+        switch (copy) {
             case true: name = `${name} (copy)`;
-            break;
+                break;
             case false: name = name;
-            break;
+                break;
             default: name = ""
         }
         if (dimLight === undefined) dimLight = 0;
@@ -264,7 +269,7 @@ class ATL {
         if (dimSight === undefined) dimSight = 0
         if (brightSight === undefined) brightSight = 0
         if (sightAngle === undefined) sightAngle = 360
-        if (lightColor === undefined) lightColor = ""
+        if (lightColor === undefined) lightColor = "#FFFFFF"
         if (lightAngle === undefined) lightAngle = 360
         if (colorIntensity === undefined) colorIntensity = 1
         if (lightEffect === undefined) lightEffect = {}
