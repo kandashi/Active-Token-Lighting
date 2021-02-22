@@ -274,9 +274,48 @@ class ATL {
         if (lightAngle === undefined) lightAngle = 360
         if (colorIntensity === undefined) colorIntensity = 1
         if (lightEffect === undefined) lightEffect = {}
-        new Dialog({
-            title: "ATL Light Editor",
-            content: `
+
+
+        let lightTypes = `<option selected value="none"> None</option>
+        <option value="torch" ${lightEffect.type === "torch" ? 'selected' : ''}> Torch</option>
+        <option value="pulse" ${lightEffect.type === "pulse" ? 'selected' : ''}> Pulse</option>
+        <option value="chroma" ${lightEffect.type === "chroma" ? 'selected' : ''}> Chroma</option>
+        <option value="wave" ${lightEffect.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
+        <option value="fog" ${lightEffect.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
+        <option value="sunburst" ${lightEffect.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
+        <option value="dome" ${lightEffect.type === "dome" ? 'selected' : ''}> Light Dome</option>
+        <option value="emanation" ${lightEffect.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
+        <option value="hexa" ${lightEffect.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
+        <option value="ghost" ${lightEffect.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
+        <option value="energy" ${lightEffect.type === "energy" ? 'selected' : ''}> Energy Field</option>
+        <option value="roiling" ${lightEffect.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
+        <option value="hole" ${lightEffect.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>`
+
+
+        if(game.modules.get("CommunityLighting").active){
+            lightTypes += `
+            <optgroup label= "Blits" id="animationType">
+            <option value="BlitzFader" ${lightEffect.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
+            <option value="BlitzLightning" ${lightEffect.type === "BlitzLightning" ? 'selected' : ''}>Lightning (expirmental)</option>
+            <option value="BlitzElectric Fault" ${lightEffect.type === "BlitzElectric Fault" ? 'selected' : ''}>Electrical Fault</option>
+            <option value="BlitzSimple Flash" ${lightEffect.type === "BlitzSimple Flash" ? 'selected' : ''}>Simple Flash</option>
+            <option value="BlitzRBG Flash" ${lightEffect.type === "BlitzRBG Flash" ? 'selected' : ''}>RGB Flash</option>
+            <option value="BlitzPolice Flash" ${lightEffect.type === "BlitzPolice Flash" ? 'selected' : ''}>Police Flash</option>
+            <option value="BlitzStatic Blur" ${lightEffect.type === "BlitzStatic Blur" ? 'selected' : ''}> Static Blur</option>
+            <option value="BlitzAlternate Torch" ${lightEffect.type === "BlitzAlternate Torch" ? 'selected' : ''}>Alternate Torch</option>
+            <option value="BlitzBlurred Torch" ${lightEffect.type === "BlitzBlurred Torch" ? 'selected' : ''}>Blurred Torch</option>
+            <option value="BlitzGrid Force-Field Colorshift" ${lightEffect.type === "BlitzGrid Force-Field Colorshift" ? 'selected' : ''}>Grid Force-Field Colorshift</option>
+            </optgroup>
+            <optgroul label="SecretFire" id="animationType">
+            <option value="SecretFireGrid Force-Field" ${lightEffect.type === "SecretFireGrid Force-Field" ? 'selected' : ''}>Grid Force-Field</option>
+            <option value="SecretFireSmoke Patch" ${lightEffect.type === "SecretFireSmoke Patch" ? 'selected' : ''}>Smoke Patch</option>
+            <option value="SecretFireStar Light" ${lightEffect.type === "SecretFireStar Light" ? 'selected' : ''}>Star Light</option>
+            <option value="SecretFireStar Light Disco" ${lightEffect.type === "SecretFireStar Light Disco" ? 'selected' : ''}>Star Light Disco</option>
+            </optgroup>
+        `
+        }
+
+        let dialogContent = `
         <form>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
            
@@ -319,20 +358,7 @@ class ATL {
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="animationType"> Animation Type: </label>
                 <select id="animationType" name="animationType" >
-                    <option selected value="none"> None</option>
-                    <option value="torch" ${lightEffect.type === "torch" ? 'selected' : ''}> Torch</option>
-                    <option value="pulse" ${lightEffect.type === "pulse" ? 'selected' : ''}> Pulse</option>
-                    <option value="chroma" ${lightEffect.type === "chroma" ? 'selected' : ''}> Chroma</option>
-                    <option value="wave" ${lightEffect.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
-                    <option value="fog" ${lightEffect.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
-                    <option value="sunburst" ${lightEffect.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
-                    <option value="dome" ${lightEffect.type === "dome" ? 'selected' : ''}> Light Dome</option>
-                    <option value="emanation" ${lightEffect.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
-                    <option value="hexa" ${lightEffect.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
-                    <option value="ghost" ${lightEffect.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
-                    <option value="energy" ${lightEffect.type === "energy" ? 'selected' : ''}> Energy Field</option>
-                    <option value="roiling" ${lightEffect.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
-                    <option value="hole" ${lightEffect.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>
+                    ${lightTypes}
                 </select>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
@@ -343,7 +369,11 @@ class ATL {
                     <label for="animationIntensity"> Animation Intensity: </label>
                     <input id="animationIntensity" name="animationIntensity" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.intensity}"></input>
             </div>
-                `,
+                `;
+        
+        new Dialog({
+            title: "ATL Light Editor",
+            content: dialogContent,
             buttons: {
                 one: {
                     label: "Add Preset",
