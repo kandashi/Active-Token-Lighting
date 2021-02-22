@@ -174,9 +174,10 @@ class ATL {
         if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
 
 
-        let { size, scale } = SizeFlag !== undefined ? SizeFlag : 0;
-        if (size === undefined) size = tokenData.height
-        if (scale === undefined) scale = tokenData.scale
+        let { height, width, scale } = SizeFlag !== undefined ? SizeFlag : 0;
+        if (height === undefined) height = tokenData.height;
+        if (width === undefined) width = tokenData.width;
+        if (scale === undefined) scale = tokenData.scale;
 
 
 
@@ -192,7 +193,7 @@ class ATL {
         else lightAnimation = JSON.parse(lightEffect)
 
         if (game.settings.get("ATL", "size") === true)
-            token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), height: size, width: size, scale: scale, lightAngle: lightAngle })
+            token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), height: height, width: width, scale: scale, lightAngle: lightAngle })
         else if (game.settings.get("ATL", "size") === false)
             token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), lightAngle: lightAngle })
 
