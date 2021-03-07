@@ -294,7 +294,7 @@ class ATL {
 
         if(game.modules.get("CommunityLighting").active){
             lightTypes += `
-            <optgroup label= "Blits" id="animationType">
+            <optgroup label= "Blitz" id="animationType">
             <option value="BlitzFader" ${lightEffect.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
             <option value="BlitzLightning" ${lightEffect.type === "BlitzLightning" ? 'selected' : ''}>Lightning (expirmental)</option>
             <option value="BlitzElectric Fault" ${lightEffect.type === "BlitzElectric Fault" ? 'selected' : ''}>Electrical Fault</option>
@@ -306,7 +306,7 @@ class ATL {
             <option value="BlitzBlurred Torch" ${lightEffect.type === "BlitzBlurred Torch" ? 'selected' : ''}>Blurred Torch</option>
             <option value="BlitzGrid Force-Field Colorshift" ${lightEffect.type === "BlitzGrid Force-Field Colorshift" ? 'selected' : ''}>Grid Force-Field Colorshift</option>
             </optgroup>
-            <optgroul label="SecretFire" id="animationType">
+            <optgroup label="SecretFire" id="animationType">
             <option value="SecretFireGrid Force-Field" ${lightEffect.type === "SecretFireGrid Force-Field" ? 'selected' : ''}>Grid Force-Field</option>
             <option value="SecretFireSmoke Patch" ${lightEffect.type === "SecretFireSmoke Patch" ? 'selected' : ''}>Smoke Patch</option>
             <option value="SecretFireStar Light" ${lightEffect.type === "SecretFireStar Light" ? 'selected' : ''}>Star Light</option>
@@ -341,11 +341,11 @@ class ATL {
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="lightAngle"> Light Angle: </label>
-                    <input id="lightAngle" name="lightAngle" type="number" min="0" max="360" value="${lightAngle}"></input>
+                    <input id="lightAngle" name="lightAngle" type="range" min="0" max="360" step="1" value="${lightAngle}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="sightAngle"> Sight Angle: </label>
-                    <input id="sightAngle" name="sightAngle" type="number" min="0" max="360" value="${sightAngle}"></input>
+                    <input id="sightAngle" name="sightAngle" type="range" min="0" max="360" step="1" value="${sightAngle}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="lightAlpha"> Light Intensity: </label>
@@ -363,14 +363,15 @@ class ATL {
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="animationSpeed"> Animation Speed: </label>
-                    <input id="animationSpeed" name="animationSpeed" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.speed}"></input>
+                    <input id="animationSpeed" name="animationSpeed" type="range" min="1" max="10" step="1" value="${lightEffect?.speed}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="animationIntensity"> Animation Intensity: </label>
-                    <input id="animationIntensity" name="animationIntensity" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.intensity}"></input>
+                    <input id="animationIntensity" name="animationIntensity" type="range" min="1" max="10" step="1" value="${lightEffect?.intensity}"></input>
             </div>
                 `;
         
+                
         new Dialog({
             title: "ATL Light Editor",
             content: dialogContent,
