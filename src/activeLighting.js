@@ -408,6 +408,14 @@ class ATL {
         let overrides = {};
         const originals = await entity.getFlag("ATL", "originals") || {};
 
+        for(let test of effects){
+            for( let change of test.data.changes){
+                if(change.key.includes("flags.ATL.lighting")) { change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`)}
+                if(change.key.includes("flags.ATL.size")) { change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`)}
+
+            }
+        }
+
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
             if (e.data.disabled) return changes;
@@ -522,7 +530,7 @@ class ATL {
         }
         return value;
     }
-
+    
 }
 
 
