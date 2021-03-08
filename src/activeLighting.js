@@ -403,15 +403,17 @@ class ATL {
             });
         }
     }
-     static async applyEffects(entity, effects) {
+    static async applyEffects(entity, effects) {
+        let link = entity.token.data.actorLink
         let tokenArray = entity.getActiveTokens()
         let overrides = {};
-        const originals = await entity.getFlag("ATL", "originals") || {};
+        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
+  
 
-        for(let test of effects){
-            for( let change of test.data.changes){
-                if(change.key.includes("flags.ATL.lighting")) { change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`)}
-                if(change.key.includes("flags.ATL.size")) { change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`)}
+        for (let test of effects) {
+            for (let change of test.data.changes) {
+                if (change.key.includes("flags.ATL.lighting")) { change.key = change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
+                if (change.key.includes("flags.ATL.size")) { change.key = change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
 
             }
         }
@@ -464,7 +466,8 @@ class ATL {
         }
         //update actor token
         let updatedToken = Object.assign(entity.data.token, overrides)
-        await entity.setFlag("ATL", "originals", originals)
+        if (link) await entity.setFlag("ATL", "originals", originals)
+        else entity.token.setFlag("ATL", "originals", originals)
         await entity.update({ token: updatedToken })
     }
 
@@ -530,7 +533,7 @@ class ATL {
         }
         return value;
     }
-    
+
 }
 
 

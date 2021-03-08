@@ -1,8 +1,10 @@
 # Active-Token-Lighting
 
+### 0.2.0 Update
+This is a large update that fundamentally changes the backend framework of the module. Your current ATL effects will not be changed in function, but you will get warnings to change to the new syntax. This will be slowly phased out over updates. Any ATL flag will now adjust a linked actor Prototype Token to match the data, these will carry between scenes as they should. The `lightEffect` key has been changed to `lightAnimation` any previous `lightEffect` flags will not work and need to be updated immediately. 
 
 Active Token Lighting will dynamically adjust token light settings based on active effects present on the actor. 
-You can use the syntax `flags.ATL.lighting.X` as the attribute key. 
+You can use the syntax `ATL.X` as the attribute key. 
 X can be:
 - dimLight
 - brightLight
@@ -12,27 +14,20 @@ X can be:
 - lightColor
 - colorIntensity
 - lightAngle
-- lightEffect (for this enter an object as the value, eg. `{"type":"torch","speed":1,"intensity":1}` )
+- lightAnimation (for this enter an object as the value, eg. `{"type":"torch","speed":1,"intensity":1}` )
 
-To adjust token size you can use `flags.ATL.size.X` where X can be:
+To adjust token size you can use `ATL.Y` where X can be:
 - height
 - width
 - scale
 
-There are 3 preset values for torch, lantern and candle. Use `flags.ATL.lighting.preset` and value of the name in lowercase `torch`, `lantern`, `candle`. These will override custom values set in other flags.
+There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and value of the name in lowercase `torch`, `lantern`, `candle`. These will override custom values set in other flags.
 
 Works very well alongside DAE for equip-toggle effects (Goggles of Night for example) or with Midi QoL for consumables (like torches)
 
-![Torch config](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Torch%20config.PNG)
-![Goggles of Night config](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Goggles%20of%20Night%20config.PNG)
-![Active Lighting](https://github.com/kandashi/Active-Token-Lighting/blob/main/Images/Active%20Token%20Lighting%20Demo.gif?raw=true)
 
 ## Modes
-- Add will only add onto a current existing ATL flag, not onto the existing actor vision
-- Upgrade will do as expected
-- Override will only override other ATL flags, not the actor default
-- Custom and Multiply do not work
-
+Modes will act the same as standard active effects
 
 ## Presets
 - 3 preset values 
@@ -40,7 +35,7 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
             dimLight = "40";
             brightLight = "20";
             lightColor = "#a2642a";
-            lightEffect = {
+            lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
@@ -51,7 +46,7 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
             dimLight = "60";
             brightLight = "30";
             lightColor = "#a2642a";
-            lightEffect = {
+            lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
@@ -62,7 +57,7 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
             dimLight = "10";
             brightLight = "2";
             lightColor = "#a2642a";
-            lightEffect = {
+            lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
