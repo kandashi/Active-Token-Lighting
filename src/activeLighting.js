@@ -70,23 +70,27 @@ class ATL {
         });
     }
     static ready() {
-
+        const gm = game.user === game.users.find((u) => u.isGM && u.active)
         Hooks.on("updateActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("updateToken", (scene, token, update) => {
+            if (!gm) return;
             if (!(update.actorData?.effects)) return
             let entity = canvas.tokens.get(token._id).actor
             let ATLeffects = entity.effects.filter(e => !!e.data.changes.find(effect => effect.key.includes("ATL")))
@@ -408,7 +412,7 @@ class ATL {
         let tokenArray = entity.getActiveTokens()
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
-  
+
 
         for (let test of effects) {
             for (let change of test.data.changes) {
@@ -452,8 +456,8 @@ class ATL {
                 let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
-                    if(updateKey === "lightAnimation" && typeof result === "string") result = JSON.parse(result);
-                    if(updateKey === "colorIntensity") {result = result*result; updateKey= "lightAlpha"; console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`)};
+                    if (updateKey === "lightAnimation" && typeof result === "string") result = JSON.parse(result);
+                    if (updateKey === "colorIntensity") { result = result * result; updateKey = "lightAlpha"; console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`) };
                     overrides[updateKey] = result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") originals[updateKey] = entity.data.token[updateKey]
