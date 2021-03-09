@@ -73,19 +73,19 @@ class ATL {
         const gm = game.user === game.users.find((u) => u.isGM && u.active)
         Hooks.on("updateActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
@@ -93,7 +93,7 @@ class ATL {
             if (!gm) return;
             if (!(update.actorData?.effects)) return
             let entity = canvas.tokens.get(token._id).actor
-            let ATLeffects = entity.effects.filter(e => !!e.data.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             ATL.applyEffects(entity, ATLeffects)
         })
     }
@@ -408,7 +408,7 @@ class ATL {
         }
     }
     static async applyEffects(entity, effects) {
-        let link = entity.token.data.actorLink
+        let link = entity?.token?.data?.actorLink || true
         let tokenArray = entity.getActiveTokens()
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
