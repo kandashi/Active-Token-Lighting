@@ -79,14 +79,20 @@ class ATL {
 
         Hooks.on("createActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
+            Hooks.once("applyActiveEffect", () => {
+                let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+                if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
+            })
         })
 
         Hooks.on("deleteActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
+            let index = ATLeffects.map(function (e) { return e.id; }).indexOf(effect._id);
+            if (ATLeffects) {
+                ATLeffects.splice(index, 1);
+                ATL.applyEffects(entity, ATLeffects)
+            }
         })
 
         Hooks.on("updateToken", (scene, token, update) => {
