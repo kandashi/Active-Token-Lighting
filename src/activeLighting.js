@@ -414,7 +414,6 @@ class ATL {
             for (let change of test.data.changes) {
                 if (change.key.includes("flags.ATL.lighting")) { change.key = change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
                 if (change.key.includes("flags.ATL.size")) { change.key = change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
-
             }
         }
 
@@ -443,6 +442,7 @@ class ATL {
                 delete overrides.colorIntensity
                 overrides.lightAngle = parseInt(overrides.lightAngle)
                 overrides.sightAngle = parseInt(overrides.sightAngle)
+
                 for (const [key, value] of Object.entries(overrides)) {
                     let ot = typeof getProperty(originals, key)
                     if (ot === "null" || ot === "undefined") originals[key] = token.data[key]
@@ -450,8 +450,10 @@ class ATL {
             }
             else {
                 let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
-                const result = ATL.apply(entity, change, originals, preValue);
+                let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
+                    if(updateKey === "lightAnimation" && typeof result === "string") result = JSON.parse(result);
+                    if(updateKey === "colorIntensity") {result = result*result; updateKey= "lightAlpha"; console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`)};
                     overrides[updateKey] = result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") originals[updateKey] = entity.data.token[updateKey]
@@ -460,6 +462,8 @@ class ATL {
         }
 
         if (changes.length < 1) overrides = originals
+
+
         // Expand the set of final overrides
         for (let eachToken of tokenArray) {
             await eachToken.update(overrides)
