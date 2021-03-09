@@ -70,23 +70,27 @@ class ATL {
         });
     }
     static ready() {
-
+        const gm = game.user === game.users.find((u) => u.isGM && u.active)
         Hooks.on("updateActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (entity, effect, options) => {
+            if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("updateToken", (scene, token, update) => {
+            if (!gm) return;
             if (!(update.actorData?.effects)) return
             let entity = canvas.tokens.get(token._id).actor
             let ATLeffects = entity.effects.filter(e => !!e.data.changes.find(effect => effect.key.includes("ATL")))
@@ -408,13 +412,12 @@ class ATL {
         let tokenArray = entity.getActiveTokens()
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
-  
+
 
         for (let test of effects) {
             for (let change of test.data.changes) {
                 if (change.key.includes("flags.ATL.lighting")) { change.key = change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
                 if (change.key.includes("flags.ATL.size")) { change.key = change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.name} is out of date, please update to the new schema`) }
-
             }
         }
 
@@ -443,6 +446,7 @@ class ATL {
                 delete overrides.colorIntensity
                 overrides.lightAngle = parseInt(overrides.lightAngle)
                 overrides.sightAngle = parseInt(overrides.sightAngle)
+
                 for (const [key, value] of Object.entries(overrides)) {
                     let ot = typeof getProperty(originals, key)
                     if (ot === "null" || ot === "undefined") originals[key] = token.data[key]
@@ -450,8 +454,10 @@ class ATL {
             }
             else {
                 let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
-                const result = ATL.apply(entity, change, originals, preValue);
+                let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
+                    if (updateKey === "lightAnimation" && typeof result === "string") result = JSON.parse(result);
+                    if (updateKey === "colorIntensity") { result = result * result; updateKey = "lightAlpha"; console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`) };
                     overrides[updateKey] = result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") originals[updateKey] = entity.data.token[updateKey]
@@ -460,6 +466,8 @@ class ATL {
         }
 
         if (changes.length < 1) overrides = originals
+
+
         // Expand the set of final overrides
         for (let eachToken of tokenArray) {
             await eachToken.update(overrides)
