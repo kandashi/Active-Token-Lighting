@@ -449,7 +449,7 @@ class ATL {
 
                 for (const [key, value] of Object.entries(overrides)) {
                     let ot = typeof getProperty(originals, key)
-                    if (ot === "null" || ot === "undefined") originals[key] = token.data[key]
+                    if (ot === "null" || ot === "undefined") originals[key] = entity.data.token[key]
                 }
             }
             else {
