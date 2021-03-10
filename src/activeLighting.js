@@ -199,7 +199,7 @@ class ATL {
         <option value="hole" ${lightAnimation.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>`
 
 
-        if (game.modules.get("CommunityLighting").active) {
+        if (game.modules.get("CommunityLighting")?.active) {
             lightTypes += `
             <optgroup label= "Blitz" id="animationType">
             <option value="BlitzFader" ${lightAnimation.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
