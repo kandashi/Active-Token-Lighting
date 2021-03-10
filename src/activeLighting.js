@@ -450,8 +450,8 @@ class ATL {
                 delete overrides.name
                 overrides.lightAlpha = overrides.colorIntensity * overrides.colorIntensity
                 delete overrides.colorIntensity
-                overrides.lightAngle = parseInt(overrides.lightAngle)
-                overrides.sightAngle = parseInt(overrides.sightAngle)
+                overrides.lightAngle = parseInt(overrides?.lightAngle) || originals?.lightAngle || 360
+                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle  || 360
 
                 for (const [key, value] of Object.entries(overrides)) {
                     let ot = typeof getProperty(originals, key)
