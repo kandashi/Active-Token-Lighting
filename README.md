@@ -25,6 +25,8 @@ There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and va
 
 Works very well alongside DAE for equip-toggle effects (Goggles of Night for example) or with Midi QoL for consumables (like torches)
 
+## Premade Items
+ These are made and (and only compatable with) the dnd5e system, but the syntax will apply across all systems.
 
 ## Modes
 Modes will act the same as standard active effects
