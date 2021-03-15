@@ -75,7 +75,7 @@ Modes will act the same as standard active effects
     - ATL.RemovePreset() takes the name of the preset to be removed
     - ATL.GeneratePreset() will open a dialog to create a new preset
     - ATL.UpdatePresets() will open a dialog to edit,delete,add presets
-- Use the presets in the same way with `flags.ATL.lighting.preset` with a value of the preset name
+- Use the presets in the same way with `ATL.preset` with a value of the preset name
 
 ## Complications
-- At the moment `flags.ATL.lighting.lightEffect` will not correctly apply if this effect is applied through Midi QoL
+- At the moment `ATL.lightEffect` will not correctly apply if this effect is applied through Midi QoL
