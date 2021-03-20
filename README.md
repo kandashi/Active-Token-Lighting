@@ -30,6 +30,7 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
 
 ## Modes
 Modes will act the same as standard active effects
+`ATl.lightAnimation` is required to be an override effect
 
 ## Presets
 - 3 preset values 
