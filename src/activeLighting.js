@@ -441,6 +441,7 @@ class ATL {
 
         // Apply all changes
         for (let change of changes) {
+            if(!change.key.includes("ATL")) continue;
             let updateKey = change.key.slice(4)
             if (updateKey === "preset") {
                 let presetArray = game.settings.get("ATL", "presets")
