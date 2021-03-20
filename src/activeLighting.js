@@ -463,11 +463,46 @@ class ATL {
                 let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
-                    if (updateKey === "lightAnimation" && typeof result === "string") result = JSON.parse(result);
-                    if (updateKey === "colorIntensity") { result = result * result; updateKey = "lightAlpha"; console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`) };
-                    overrides[updateKey] = result;
+                    let resultTmp;
+                    if (updateKey === "lightAnimation" && typeof result === "string"){
+                        try{
+                            resultTmp = JSON.parse(result);
+                        }catch(e){                        
+                            // MANAGE STRANGE ERROR FROM USERS
+                            var fixedJSON = result
+
+                            // Replace ":" with "@colon@" if it's between double-quotes
+                            .replace(/:\s*"([^"]*)"/g, function(match, p1) {
+                                return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                            })
+
+                            // Replace ":" with "@colon@" if it's between single-quotes
+                            .replace(/:\s*'([^']*)'/g, function(match, p1) {
+                                return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                            })
+
+                            // Add double-quotes around any tokens before the remaining ":"
+                            .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+
+                            // Add double-quotes around any tokens after the remaining ":"
+                            .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+
+                            // Turn "@colon@" back into ":"
+                            .replace(/@colon@/g, ':');
+                                 
+                            resultTmp = JSON.parse(fixedJSON);
+                        }    
+                    } 
+                    if (updateKey === "colorIntensity") { 
+                        result = result * result; 
+                        updateKey = "lightAlpha"; 
+                        console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`) 
+                    }
+                    overrides[updateKey] = resultTmp ? resultTmp : result;
                     let ot = typeof getProperty(originals, updateKey)
-                    if (ot === "null" || ot === "undefined") originals[updateKey] = entity.data.token[updateKey]
+                    if (ot === "null" || ot === "undefined"){
+                        originals[updateKey] = entity.data.token[updateKey];
+                    }
                 }
             }
         }
