@@ -414,8 +414,11 @@ class ATL {
         }
     }
     static async applyEffects(entity, effects) {
-        let link = entity?.token?.data?.actorLink || true
-        let tokenArray = entity.getActiveTokens()
+        let link = getProperty(entity, "token.data.actorLink")
+        if(link === undefined) link = true
+        let tokenArray = []
+        if(!link) tokenArray = [entity.token]
+        else tokenArray = entity.getActiveTokens()
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
 
