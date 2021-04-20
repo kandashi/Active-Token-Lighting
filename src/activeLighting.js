@@ -162,7 +162,7 @@ class ATL {
 
     static GeneratePreset(preset, copy) {
 
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect: lightAnimation, colorIntensity, lightAngle, name } = preset ? preset : 0
+        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightAnimation: lightAnimation, colorIntensity, lightAngle, name } = preset ? preset : 0
         switch (copy) {
             case true: name = `${name} (copy)`;
                 break;
