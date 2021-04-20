@@ -47,15 +47,13 @@ class ATL {
         ]
         game.settings.register("ATL", "size", {
             name: "Size Adjustment with Flags",
-            hint: "Allow for size adjustment to be made with flags, alwasy returns tokens to prototype token defaults is flag is not present",
+            hint: "Allow for size adjustment to be made with flags, always returns tokens to prototype token defaults if flag is not present",
             scope: "world",
             config: true,
             default: false,
             type: Boolean,
         });
         game.settings.register("ATL", "presets", {
-            name: "Size Adjustment with Flags",
-            hint: "Allow for size adjustment to be made with flags, alwasy returns tokens to prototype token defaults is flag is not present",
             scope: "world",
             config: false,
             default: defaultPresets,
@@ -515,7 +513,9 @@ class ATL {
 
         // Expand the set of final overrides
         for (let eachToken of tokenArray) {
-            await eachToken.update(overrides)
+            let updates = duplicate(originals)
+            Object.assign(updates, overrides)
+            await eachToken.update(updates)
         }
         //update actor token
         let updatedToken = Object.assign(entity.data.token, overrides)
