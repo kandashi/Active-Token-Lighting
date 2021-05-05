@@ -71,24 +71,27 @@ class ATL {
         const gm = game.user === game.users.find((u) => u.isGM && u.active)
         Hooks.on("updateActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            let totalEffects = Array.from(entity.effects.entries)
+            totalEffects.splice(totalEffects.indexOf(effect._id))
+            totalEffects.push({ data: effect })
+            let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
-            Hooks.once("applyActiveEffect", () => {
-                let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects) ATL.applyEffects(entity, ATLeffects)
-            })
+            const totalEffects = entity.effects.set(randomID(), { data: effect })
+            let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            if (ATLeffects.length > 0) ATL.applyEffects(entity, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (entity, effect, options) => {
             if (!gm) return;
             let ATLeffects = entity.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-            let index = ATLeffects.map(function (e) { return e.id; }).indexOf(effect._id);
+            let map = ATLeffects.map(function (e) { return e.id; })
+            let index = map.indexOf(effect._id);
             if (ATLeffects) {
-                ATLeffects.splice(index, 1);
+                if (index > -1) ATLeffects.splice(index, 1);
                 ATL.applyEffects(entity, ATLeffects)
             }
         })
@@ -413,9 +416,9 @@ class ATL {
     }
     static async applyEffects(entity, effects) {
         let link = getProperty(entity, "token.data.actorLink")
-        if(link === undefined) link = true
+        if (link === undefined) link = true
         let tokenArray = []
-        if(!link) tokenArray = [entity.token]
+        if (!link) tokenArray = [entity.token]
         else tokenArray = entity.getActiveTokens()
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
@@ -442,7 +445,7 @@ class ATL {
 
         // Apply all changes
         for (let change of changes) {
-            if(!change.key.includes("ATL")) continue;
+            if (!change.key.includes("ATL")) continue;
             let updateKey = change.key.slice(4)
             if (updateKey === "preset") {
                 let presetArray = game.settings.get("ATL", "presets")
@@ -453,7 +456,7 @@ class ATL {
                 overrides.lightAlpha = overrides.colorIntensity * overrides.colorIntensity
                 delete overrides.colorIntensity
                 overrides.lightAngle = parseInt(overrides?.lightAngle) || originals?.lightAngle || 360
-                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle  || 360
+                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
 
                 for (const [key, value] of Object.entries(overrides)) {
                     let ot = typeof getProperty(originals, key)
@@ -465,43 +468,43 @@ class ATL {
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
                     let resultTmp;
-                    if (updateKey === "lightAnimation" && typeof result === "string"){
-                        try{
+                    if (updateKey === "lightAnimation" && typeof result === "string") {
+                        try {
                             resultTmp = JSON.parse(result);
-                        }catch(e){                        
+                        } catch (e) {
                             // MANAGE STRANGE ERROR FROM USERS
                             var fixedJSON = result
 
-                            // Replace ":" with "@colon@" if it's between double-quotes
-                            .replace(/:\s*"([^"]*)"/g, function(match, p1) {
-                                return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                            })
+                                // Replace ":" with "@colon@" if it's between double-quotes
+                                .replace(/:\s*"([^"]*)"/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
 
-                            // Replace ":" with "@colon@" if it's between single-quotes
-                            .replace(/:\s*'([^']*)'/g, function(match, p1) {
-                                return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                            })
+                                // Replace ":" with "@colon@" if it's between single-quotes
+                                .replace(/:\s*'([^']*)'/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
 
-                            // Add double-quotes around any tokens before the remaining ":"
-                            .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+                                // Add double-quotes around any tokens before the remaining ":"
+                                .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
 
-                            // Add double-quotes around any tokens after the remaining ":"
-                            .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+                                // Add double-quotes around any tokens after the remaining ":"
+                                .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
 
-                            // Turn "@colon@" back into ":"
-                            .replace(/@colon@/g, ':');
-                                 
+                                // Turn "@colon@" back into ":"
+                                .replace(/@colon@/g, ':');
+
                             resultTmp = JSON.parse(fixedJSON);
-                        }    
-                    } 
-                    if (updateKey === "colorIntensity") { 
-                        result = result * result; 
-                        updateKey = "lightAlpha"; 
-                        console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`) 
+                        }
+                    }
+                    if (updateKey === "colorIntensity") {
+                        result = result * result;
+                        updateKey = "lightAlpha";
+                        console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`)
                     }
                     overrides[updateKey] = resultTmp ? resultTmp : result;
                     let ot = typeof getProperty(originals, updateKey)
-                    if (ot === "null" || ot === "undefined"){
+                    if (ot === "null" || ot === "undefined") {
                         originals[updateKey] = entity.data.token[updateKey];
                     }
                 }
