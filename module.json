@@ -4,7 +4,7 @@
 	"description": "Active Token Lighting",
 	"author": "Kandashi",
 	"version": "0.1.16",
-	"minimumCoreVersion": "0.7.5",
+	"minimumCoreVersion": "0.8.3",
 	"compatibleCoreVersion": "0.8.3",
 	"scripts": [
 		"src/activeLighting.js"
