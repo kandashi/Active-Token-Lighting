@@ -1,3 +1,4 @@
+
 class ATL {
 
     static init() {
@@ -7,7 +8,7 @@ class ATL {
                 dimLight: "40",
                 brightLight: "20",
                 lightColor: "#a2642a",
-                lightEffect: {
+                lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
@@ -20,7 +21,7 @@ class ATL {
                 dimLight: "60",
                 brightLight: "30",
                 lightColor: "#a2642a",
-                lightEffect: {
+                lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
@@ -34,7 +35,7 @@ class ATL {
                 dimLight: "10",
                 brightLight: "2",
                 lightColor: "#a2642a",
-                lightEffect: {
+                lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
@@ -46,157 +47,54 @@ class ATL {
         ]
         game.settings.register("ATL", "size", {
             name: "Size Adjustment with Flags",
-            hint: "Allow for size adjustment to be made with flags, alwasy returns tokens to prototype token defaults is flag is not present",
+            hint: "Allow for size adjustment to be made with flags, always returns tokens to prototype token defaults if flag is not present",
             scope: "world",
             config: true,
             default: false,
             type: Boolean,
         });
         game.settings.register("ATL", "presets", {
-            name: "Size Adjustment with Flags",
-            hint: "Allow for size adjustment to be made with flags, alwasy returns tokens to prototype token defaults is flag is not present",
             scope: "world",
             config: false,
             default: defaultPresets,
             type: Object,
-        })
+        });
+        game.settings.register("ATL", "conversion", {
+            name: "conversion level",
+            scope: "world",
+            config: false,
+            default: "0",
+            type: String,
+        });
     }
     static ready() {
-
-        Hooks.on("updateActiveEffect", async (entity, effect, options) => {
-            if (entity.data.type === "character") {
-                let ATLUpdate = false;
-                for (let change of effect.changes) {
-                    if (change.key.includes("ATL")) ATLUpdate = true
-                }
-                if (ATLUpdate === false) return;
-                ATL.ReadUpdate(entity.id, effect)
-            }
+        const gm = game.user === game.users.find((u) => u.isGM && u.active)
+        Hooks.on("updateActiveEffect", async (effect, options) => {
+            if (!gm) return;
+            if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
+            let totalEffects = effect.parent.effects.contents.filter(i => !i.data.disabled)
+            let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            if (effect.data.disabled) ATLeffects.push(effect)
+            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
 
-        Hooks.on("createActiveEffect", async (actor, effect, options) => {
-            let ATLUpdate = false;
-            for (let change of effect.changes) {
-                if (change.key.includes("ATL")) ATLUpdate = true
-            }
-            if (ATLUpdate === false) return;
-            ATL.ReadUpdate(actor.id, effect)
+        Hooks.on("createActiveEffect", async (effect, options) => {
+            if (!gm) return;
+            if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
+            const totalEffects = effect.parent.effects.contents.filter(i => !i.data.disabled)
+            let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
 
-        Hooks.on("deleteActiveEffect", async (actor, effect, options) => {
-            let ATLUpdate = false;
-            for (let change of effect.changes) {
-                if (change.key.includes("ATL")) ATLUpdate = true
-            }
-            if (ATLUpdate === false) return;
-            ATL.ReadUpdate(actor.id, effect)
-        })
-
-        Hooks.on("preUpdateToken", (scene, token, update) => {
-            if (!(update.actorData?.effects)) return
-            let removed = token.actorData?.effects?.filter(x => !update.actorData?.effects?.includes(x));
-            let added = update.actorData?.effects?.filter(x => !token.actorData?.effects?.includes(x));
-            let effects = []
-            if (added) added.forEach(i => effects.push(i))
-            if (removed) removed.forEach(i => effects.push(i))
-            let ATLUpdate = false;
-            for (let testEffect of effects) {
-                for (let change of testEffect.changes) {
-                    if (change.key.includes("ATL")) {
-                        ATLUpdate = true;
-                        break;
-                    }
-                }
-            }
-
-            if (ATLUpdate === false) return;
-            ATL.ReadUpdateUnlinked(token._id)
+        Hooks.on("deleteActiveEffect", async (effect, options) => {
+            if (!gm) return;
+            if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
+            let ATLeffects = effect.parent.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            ATL.applyEffects(effect.parent, ATLeffects)
         })
     }
 
 
-    static ATLMap = new Map()
-
-    static ReadUpdate(actorId, effect) {
-        let gm = game.user === game.users.find((u) => u.isGM && u.active)
-        if (!gm) return;
-        setTimeout(() => {
-            let actor = game.actors.get(actorId)
-            const LightFlag = actor.getFlag('ATL', 'lighting')
-            const SizeFlag = actor.getFlag('ATL', 'size')
-
-            let token = actor.getActiveTokens()[0];
-            ATL.performUpdate(token, LightFlag, SizeFlag, actor.data.token)
-        }, 20)
-    }
-
-
-
-    static ReadUpdateUnlinked(tokenId) {
-        let gm = game.user === game.users.find((u) => u.isGM && u.active)
-        if (!gm) return;
-        let ATLHookId = Hooks.on("updateToken", (scene, token1, update) => {
-            if (token1._id !== tokenId) return;
-            let token = canvas.tokens.get(tokenId);
-            let actor = token.actor;
-            let tokenData = actor.data.token;
-            const LightFlag = actor.getFlag('ATL', 'lighting')
-            const SizeFlag = actor.getFlag('ATL', 'size')
-
-
-            ATL.performUpdate(token, LightFlag, SizeFlag, tokenData)
-            Hooks.off("updateToken", ATLHookId)
-        })
-    }
-
-    static performUpdate(token, LightFlag, SizeFlag, tokenData) {
-
-
-
-        if (LightFlag?.preset) {
-            let presetArray = game.settings.get("ATL", "presets")
-            let preset = presetArray.find(i => i.name === LightFlag.preset)
-            var { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = preset;
-        }
-        else var { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle } = LightFlag !== undefined ? LightFlag : 0;
-
-
-        if (lightAngle) lightAngle = parseInt(lightAngle);
-        if (sightAngle) sightAngle = parseInt(sightAngle);
-
-        if (dimLight === undefined) dimLight = 0;
-        if (brightLight === undefined) brightLight = 0
-        if (dimSight === undefined) dimSight = 0
-        if (brightSight === undefined) brightSight = 0
-        if (sightAngle === undefined) sightAngle = 360
-        if (lightColor === undefined) lightColor = ""
-        if (lightAngle === undefined) lightAngle = 360
-        if (colorIntensity === undefined) colorIntensity = tokenData.lightAlpha
-
-
-        let { size, scale } = SizeFlag !== undefined ? SizeFlag : 0;
-        if (size === undefined) size = tokenData.height
-        if (scale === undefined) scale = tokenData.scale
-
-
-
-        let newDimLight = tokenData.dimLight > dimLight ? tokenData.dimLight : dimLight;
-        let newBrightLight = tokenData.brightLight > brightLight ? tokenData.brightLight : brightLight;
-        let newDimSight = tokenData.dimSight > dimSight ? tokenData.dimSight : dimSight;
-        let newBrightSight = tokenData.brightSight > brightSight ? tokenData.brightSight : brightSight;
-        let newSightAngle = tokenData.sightAngle > sightAngle ? sightAngle : tokenData.sightAngle;
-        let lightAnimation;
-
-        if (lightEffect === undefined || lightEffect === "") lightAnimation = tokenData.lightAnimation
-        else if (LightFlag?.preset) lightAnimation = lightEffect;
-        else lightAnimation = JSON.parse(lightEffect)
-
-        if (game.settings.get("ATL", "size") === true)
-            token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), height: size, width: size, scale: scale, lightAngle: lightAngle })
-        else if (game.settings.get("ATL", "size") === false)
-            token.update({ "lightAnimation": lightAnimation, dimLight: newDimLight, brightLight: newBrightLight, dimSight: newDimSight, brightSight: newBrightSight, lightColor: lightColor, sightAngle: newSightAngle, lightAlpha: (colorIntensity * colorIntensity), lightAngle: lightAngle })
-
-    }
 
     static AddPreset(name, object) {
         if (!name) {
@@ -256,7 +154,7 @@ class ATL {
 
     static GeneratePreset(preset, copy) {
 
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightEffect, colorIntensity, lightAngle, name } = preset ? preset : 0
+        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightAnimation: lightAnimation, colorIntensity, lightAngle, name } = preset ? preset : 0
         switch (copy) {
             case true: name = `${name} (copy)`;
                 break;
@@ -272,10 +170,49 @@ class ATL {
         if (lightColor === undefined) lightColor = "#FFFFFF"
         if (lightAngle === undefined) lightAngle = 360
         if (colorIntensity === undefined) colorIntensity = 1
-        if (lightEffect === undefined) lightEffect = {}
-        new Dialog({
-            title: "ATL Light Editor",
-            content: `
+        if (lightAnimation === undefined) lightAnimation = {}
+
+
+        let lightTypes = `<option selected value="none"> None</option>
+        <option value="torch" ${lightAnimation.type === "torch" ? 'selected' : ''}> Torch</option>
+        <option value="pulse" ${lightAnimation.type === "pulse" ? 'selected' : ''}> Pulse</option>
+        <option value="chroma" ${lightAnimation.type === "chroma" ? 'selected' : ''}> Chroma</option>
+        <option value="wave" ${lightAnimation.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
+        <option value="fog" ${lightAnimation.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
+        <option value="sunburst" ${lightAnimation.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
+        <option value="dome" ${lightAnimation.type === "dome" ? 'selected' : ''}> Light Dome</option>
+        <option value="emanation" ${lightAnimation.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
+        <option value="hexa" ${lightAnimation.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
+        <option value="ghost" ${lightAnimation.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
+        <option value="energy" ${lightAnimation.type === "energy" ? 'selected' : ''}> Energy Field</option>
+        <option value="roiling" ${lightAnimation.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
+        <option value="hole" ${lightAnimation.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>`
+
+
+        if (game.modules.get("CommunityLighting")?.active) {
+            lightTypes += `
+            <optgroup label= "Blitz" id="animationType">
+            <option value="BlitzFader" ${lightAnimation.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
+            <option value="BlitzLightning" ${lightAnimation.type === "BlitzLightning" ? 'selected' : ''}>Lightning (expirmental)</option>
+            <option value="BlitzElectric Fault" ${lightAnimation.type === "BlitzElectric Fault" ? 'selected' : ''}>Electrical Fault</option>
+            <option value="BlitzSimple Flash" ${lightAnimation.type === "BlitzSimple Flash" ? 'selected' : ''}>Simple Flash</option>
+            <option value="BlitzRBG Flash" ${lightAnimation.type === "BlitzRBG Flash" ? 'selected' : ''}>RGB Flash</option>
+            <option value="BlitzPolice Flash" ${lightAnimation.type === "BlitzPolice Flash" ? 'selected' : ''}>Police Flash</option>
+            <option value="BlitzStatic Blur" ${lightAnimation.type === "BlitzStatic Blur" ? 'selected' : ''}> Static Blur</option>
+            <option value="BlitzAlternate Torch" ${lightAnimation.type === "BlitzAlternate Torch" ? 'selected' : ''}>Alternate Torch</option>
+            <option value="BlitzBlurred Torch" ${lightAnimation.type === "BlitzBlurred Torch" ? 'selected' : ''}>Blurred Torch</option>
+            <option value="BlitzGrid Force-Field Colorshift" ${lightAnimation.type === "BlitzGrid Force-Field Colorshift" ? 'selected' : ''}>Grid Force-Field Colorshift</option>
+            </optgroup>
+            <optgroup label="SecretFire" id="animationType">
+            <option value="SecretFireGrid Force-Field" ${lightAnimation.type === "SecretFireGrid Force-Field" ? 'selected' : ''}>Grid Force-Field</option>
+            <option value="SecretFireSmoke Patch" ${lightAnimation.type === "SecretFireSmoke Patch" ? 'selected' : ''}>Smoke Patch</option>
+            <option value="SecretFireStar Light" ${lightAnimation.type === "SecretFireStar Light" ? 'selected' : ''}>Star Light</option>
+            <option value="SecretFireStar Light Disco" ${lightAnimation.type === "SecretFireStar Light Disco" ? 'selected' : ''}>Star Light Disco</option>
+            </optgroup>
+        `
+        }
+
+        let dialogContent = `
         <form>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
            
@@ -301,11 +238,11 @@ class ATL {
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="lightAngle"> Light Angle: </label>
-                    <input id="lightAngle" name="lightAngle" type="number" min="0" max="360" value="${lightAngle}"></input>
+                    <input id="lightAngle" name="lightAngle" type="number" min="0" max="360" step="1" value="${lightAngle}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="sightAngle"> Sight Angle: </label>
-                    <input id="sightAngle" name="sightAngle" type="number" min="0" max="360" value="${sightAngle}"></input>
+                    <input id="sightAngle" name="sightAngle" type="number" min="0" max="360" step="1" value="${sightAngle}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="lightAlpha"> Light Intensity: </label>
@@ -318,31 +255,23 @@ class ATL {
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="animationType"> Animation Type: </label>
                 <select id="animationType" name="animationType" >
-                    <option selected value="none"> None</option>
-                    <option value="torch" ${lightEffect.type === "torch" ? 'selected' : ''}> Torch</option>
-                    <option value="pulse" ${lightEffect.type === "pulse" ? 'selected' : ''}> Pulse</option>
-                    <option value="chroma" ${lightEffect.type === "chroma" ? 'selected' : ''}> Chroma</option>
-                    <option value="wave" ${lightEffect.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
-                    <option value="fog" ${lightEffect.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
-                    <option value="sunburst" ${lightEffect.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
-                    <option value="dome" ${lightEffect.type === "dome" ? 'selected' : ''}> Light Dome</option>
-                    <option value="emanation" ${lightEffect.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
-                    <option value="hexa" ${lightEffect.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
-                    <option value="ghost" ${lightEffect.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
-                    <option value="energy" ${lightEffect.type === "energy" ? 'selected' : ''}> Energy Field</option>
-                    <option value="roiling" ${lightEffect.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
-                    <option value="hole" ${lightEffect.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>
+                    ${lightTypes}
                 </select>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="animationSpeed"> Animation Speed: </label>
-                    <input id="animationSpeed" name="animationSpeed" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.speed}"></input>
+                    <input id="animationSpeed" name="animationSpeed" type="range" min="1" max="10" step="1" value="${lightAnimation?.speed}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                     <label for="animationIntensity"> Animation Intensity: </label>
-                    <input id="animationIntensity" name="animationIntensity" type="number" min="0" max="1" placeholder="1-10" value="${lightEffect?.intensity}"></input>
+                    <input id="animationIntensity" name="animationIntensity" type="range" min="1" max="10" step="1" value="${lightAnimation?.intensity}"></input>
             </div>
-                `,
+                `;
+
+
+        new Dialog({
+            title: "ATL Light Editor",
+            content: dialogContent,
             buttons: {
                 one: {
                     label: "Add Preset",
@@ -367,7 +296,7 @@ class ATL {
                             dimLight: dimLight,
                             brightLight: brightLight,
                             lightColor: lightColor,
-                            lightEffect: {
+                            lightAnimation: {
                                 'type': animationType,
                                 'speed': animationSpeed,
                                 'intensity': animationIntensity
@@ -375,8 +304,8 @@ class ATL {
                             colorIntensity: lightAlpha,
                             dimSight: dimSight,
                             brightSight: brightSight,
-                            sightAngle: sightAngle,
-                            lightAngle: lightAngle,
+                            sightAngle: parseInt(sightAngle),
+                            lightAngle: parseInt(lightAngle),
                             id: id
                         }
                         ATL.AddPreset(name, object)
@@ -474,10 +403,218 @@ class ATL {
             });
         }
     }
+    static async applyEffects(entity, effects) {
+        let link = getProperty(entity, "data.token.actorLink")
+        if (link === undefined) link = true
+        let tokenArray = []
+        if (!link) tokenArray = [entity.token]
+        else tokenArray = entity.getActiveTokens()
+        let overrides = {};
+        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
+
+
+        for (let test of effects) {
+            for (let change of test.data.changes) {
+                if (change.key.includes("flags.ATL.lighting")) { change.key = change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.data.name} is out of date, please update to the new schema`) }
+                if (change.key.includes("flags.ATL.size")) { change.key = change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.data.name} is out of date, please update to the new schema`) }
+            }
+        }
+
+        // Organize non-disabled effects by their application priority
+        const changes = effects.reduce((changes, e) => {
+            if (e.data.disabled) return changes;
+            return changes.concat(e.data.changes.map(c => {
+                c = duplicate(c);
+                c.effect = e;
+                c.priority = c.priority ?? (c.mode * 10);
+                return c;
+            }));
+        }, []);
+        changes.sort((a, b) => a.priority - b.priority);
+
+        // Apply all changes
+        for (let change of changes) {
+            if (!change.key.includes("ATL")) continue;
+            let updateKey = change.key.slice(4)
+            if (updateKey === "preset") {
+                let presetArray = game.settings.get("ATL", "presets")
+                let preset = presetArray.find(i => i.name === change.value)
+                overrides = duplicate(preset);
+                delete overrides.id
+                delete overrides.name
+                overrides.lightAlpha = overrides.colorIntensity * overrides.colorIntensity
+                delete overrides.colorIntensity
+                overrides.lightAngle = parseInt(overrides?.lightAngle) || originals?.lightAngle || 360
+                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
+
+                for (const [key, value] of Object.entries(overrides)) {
+                    let ot = typeof getProperty(originals, key)
+                    if (ot === "null" || ot === "undefined") originals[key] = entity.data.token[key]
+                }
+            }
+            else {
+                let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
+                let result = ATL.apply(entity, change, originals, preValue);
+                if (result !== null) {
+                    let resultTmp;
+                    if (updateKey === "lightAnimation" && typeof result === "string") {
+                        try {
+                            resultTmp = JSON.parse(result);
+                        } catch (e) {
+                            // MANAGE STRANGE ERROR FROM USERS
+                            var fixedJSON = result
+
+                                // Replace ":" with "@colon@" if it's between double-quotes
+                                .replace(/:\s*"([^"]*)"/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
+
+                                // Replace ":" with "@colon@" if it's between single-quotes
+                                .replace(/:\s*'([^']*)'/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
+
+                                // Add double-quotes around any tokens before the remaining ":"
+                                .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+
+                                // Add double-quotes around any tokens after the remaining ":"
+                                .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+
+                                // Turn "@colon@" back into ":"
+                                .replace(/@colon@/g, ':');
+
+                            resultTmp = JSON.parse(fixedJSON);
+                        }
+                    }
+                    if (updateKey === "colorIntensity") {
+                        result = result * result;
+                        updateKey = "lightAlpha";
+                        console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`)
+                    }
+                    overrides[updateKey] = resultTmp ? resultTmp : result;
+                    let ot = typeof getProperty(originals, updateKey)
+                    if (ot === "null" || ot === "undefined") {
+                        originals[updateKey] = entity.data.token[updateKey];
+                    }
+                }
+            }
+        }
+
+        if (changes.length < 1) overrides = originals
+
+
+        // Expand the set of final overrides
+        for (let eachToken of tokenArray) {
+            let updates = duplicate(originals)
+            Object.assign(updates, overrides)
+            await eachToken.update(updates)
+        }
+        //update actor token
+        let updatedToken = Object.assign(entity.data.token, overrides)
+        if (link) await entity.setFlag("ATL", "originals", originals)
+        else entity.token.setFlag("ATL", "originals", originals)
+        await entity.update({ token: updatedToken })
+    }
+
+
+    static apply(token, change, originals, preValue) {
+        const modes = CONST.ACTIVE_EFFECT_MODES;
+        switch (change.mode) {
+            case modes.CUSTOM:
+                return ATL.applyCustom(token, change, originals, preValue);
+            case modes.ADD:
+                return ATL.applyAdd(token, change, originals, preValue);
+            case modes.MULTIPLY:
+                return ATL.applyMultiply(token, change, originals, preValue);
+            case modes.OVERRIDE:
+            case modes.UPGRADE:
+            case modes.DOWNGRADE:
+                return ATL.applyOverride(token, change, originals, preValue);
+        }
+    }
+
+    static applyAdd(token, change, originals, current) {
+        let { key, value } = change;
+        key = key.slice(4)
+        //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
+        const ct = getType(current);
+        let update = null;
+
+        // Handle different types of the current data
+        switch (ct) {
+            case "null":
+                update = parseInt(value);
+                break;
+            case "string":
+                update = current + String(value);
+                break;
+            case "number":
+                if (Number.isNumeric(value)) update = current + Number(value);
+                break;
+            case "Array":
+                if (!current.length || (getType(value) === getType(current[0]))) update = current.concat([value]);
+        }
+        return update;
+    }
+
+    static applyMultiply(token, change, originals, current) {
+        let { key, value } = change;
+        key = key.slice(4)
+        //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
+        if ((typeof (current) !== "number") || (typeof (value) !== "number")) return null;
+        const update = current * value;
+        return update;
+    }
+
+    static applyOverride(token, change, originals, current) {
+        let { key, value, mode } = change;
+        key = key.slice(4)
+        //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
+        if (mode === CONST.ACTIVE_EFFECT_MODES.UPGRADE) {
+            if ((typeof (current) === "number") && (current >= Number(value))) return null;
+        }
+        if (mode === CONST.ACTIVE_EFFECT_MODES.DOWNGRADE) {
+            if ((typeof (current) === "number") && (current < Number(value))) return null;
+        }
+        return value;
+    }
+
 }
 
 
 
 Hooks.on('init', ATL.init);
-Hooks.on('ready', ATL.ready);
+Hooks.on('ready', ATL.ready)
+Hooks.on("canvasReady", () => {
+    if (game.settings.get("ATL", "conversion") !== "0.2.0") {
+        performConversion()
+    }
+
+
+    function performConversion() {
+        let presetArray = game.settings.get("ATL", "presets")
+        for (let preset of presetArray) {
+            console.log(`ATL: Updating preset ${preset.name}`)
+            for (const [key, value] of Object.entries(preset)) {
+                if (key === "lightEffect") {
+                    preset.lightAnimation = preset.lightEffect
+                    delete preset.lightEffect
+                }
+                if (key === "lightAngle" && typeof value !== "number") {
+                    preset.lightAngle = parseInt(preset.lightAngle)
+                }
+                if (key === "sightAngle" && typeof value !== "number") {
+                    preset.sightAngle = typeof parseInt(preset.sightAngle) === "number" ? parseInt(preset.sightAngle) : 0;
+                }
+            }
+        }
+        console.log("ATL: Update finished")
+        game.settings.set("ATL", "presets", presetArray)
+        game.settings.set("ATL", "conversion", "0.2.0")
+    }
+
+});
 Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
+
+
+
