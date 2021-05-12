@@ -5,42 +5,42 @@ class ATL {
         let defaultPresets = [
             {
                 name: "torch",
-                dimLight: "40",
-                brightLight: "20",
+                dimLight: 40,
+                brightLight: 20,
                 lightColor: "#a2642a",
                 lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: "0.4",
+                colorIntensity: 0.4,
                 id: "ATLPresetTorch"
             },
             {
                 name: "lantern",
-                dimLight: "60",
-                brightLight: "30",
+                dimLight: 60,
+                brightLight: 30,
                 lightColor: "#a2642a",
                 lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: "0.4",
+                colorIntensity: 0.4,
                 id: "ATLPresetLantern"
 
             },
             {
                 name: "candle",
-                dimLight: "10",
-                brightLight: "2",
+                dimLight: 10,
+                brightLight: 2,
                 lightColor: "#a2642a",
                 lightAnimation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: "0.2",
+                colorIntensity: 0.2,
                 id: "ATLPresetCandle"
 
             }
@@ -279,17 +279,17 @@ class ATL {
                     callback: (html) => {
                         let id = randomID()
                         let name = html.find("#name")[0].value
-                        let dimLight = html.find("#dimLight")[0].value
-                        let brightLight = html.find("#brightLight")[0].value
-                        let dimSight = html.find("#dimSight")[0].value
-                        let brightSight = html.find("#brightSight")[0].value
+                        let dimLight = Number(html.find("#dimLight")[0].value)
+                        let brightLight = Number(html.find("#brightLight")[0].value)
+                        let dimSight = Number(html.find("#dimSight")[0].value)
+                        let brightSight = Number(html.find("#brightSight")[0].value)
                         let lightColor = html.find("#lightColor")[0].value
-                        let sightAngle = html.find("#sightAngle")[0].value
-                        let lightAlpha = html.find("#lightAlpha")[0].value
-                        let lightAngle = html.find("#lightAngle")[0].value
+                        let sightAngle = Number(html.find("#sightAngle")[0].value)
+                        let lightAlpha = Number(html.find("#lightAlpha")[0].value)
+                        let lightAngle = Number(html.find("#lightAngle")[0].value)
                         let animationType = html.find("#animationType")[0].value
-                        let animationSpeed = html.find("#animationSpeed")[0].value
-                        let animationIntensity = html.find("#animationIntensity")[0].value
+                        let animationSpeed = Number(html.find("#animationSpeed")[0].value)
+                        let animationIntensity = Number(html.find("#animationIntensity")[0].value)
 
                         let object = {
                             name: name,
@@ -407,18 +407,12 @@ class ATL {
         let link = getProperty(entity, "data.token.actorLink")
         if (link === undefined) link = true
         let tokenArray = []
-        if (!link) tokenArray = [entity.token]
+        if (!link) tokenArray = [entity.token?.object]
         else tokenArray = entity.getActiveTokens()
+        if(tokenArray === []) return;
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
 
-
-        for (let test of effects) {
-            for (let change of test.data.changes) {
-                if (change.key.includes("flags.ATL.lighting")) { change.key = change.key.replace("flags.ATL.lighting", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.data.name} is out of date, please update to the new schema`) }
-                if (change.key.includes("flags.ATL.size")) { change.key = change.key.replace("flags.ATL.size", "ATL"), console.warn(`ATL: ${test.data.label} on actor ${entity.data.data.name} is out of date, please update to the new schema`) }
-            }
-        }
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
@@ -440,6 +434,10 @@ class ATL {
                 let presetArray = game.settings.get("ATL", "presets")
                 let preset = presetArray.find(i => i.name === change.value)
                 overrides = duplicate(preset);
+                const stringCheck = (element) => typeof element === "string"
+                if([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(stringCheck)) {
+                    ui.notifications.error("ATL: preset string error")
+                }
                 delete overrides.id
                 delete overrides.name
                 overrides.lightAlpha = overrides.colorIntensity * overrides.colorIntensity
@@ -486,11 +484,7 @@ class ATL {
                             resultTmp = JSON.parse(fixedJSON);
                         }
                     }
-                    if (updateKey === "colorIntensity") {
-                        result = result * result;
-                        updateKey = "lightAlpha";
-                        console.warn(`ATL: colourIntensity is out of date, please update to the new lightAlpha`)
-                    }
+
                     overrides[updateKey] = resultTmp ? resultTmp : result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") {
@@ -507,7 +501,7 @@ class ATL {
         for (let eachToken of tokenArray) {
             let updates = duplicate(originals)
             Object.assign(updates, overrides)
-            await eachToken.update(updates)
+            await eachToken.document.update(updates)
         }
         //update actor token
         let updatedToken = Object.assign(entity.data.token, overrides)
