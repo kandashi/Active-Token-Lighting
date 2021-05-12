@@ -16,12 +16,12 @@ X can be:
 - lightAngle
 - lightAnimation (for this enter an object as the value, eg. `{"type":"torch","speed":1,"intensity":1}` )
 
-To adjust token size you can use `ATL.Y` where X can be:
+To adjust token size you can use `ATL.X` where X can be:
 - height
 - width
 - scale
 
-There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and value of the name in lowercase `torch`, `lantern`, `candle`. These will override custom values set in other flags.
+There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and value of the name in lowercase `torch`, `lantern`, `candle` and `flashlight`. These will override custom values set in other flags.
 
 Works very well alongside DAE for equip-toggle effects (Goggles of Night for example) or with Midi QoL for consumables (like torches)
 
@@ -35,38 +35,43 @@ Modes will act the same as standard active effects
 ## Presets
 - 3 preset values 
 -  Torch
-            dimLight = "40";
-            brightLight = "20";
+            dimLight = 40;
+            brightLight = 20;
             lightColor = "#a2642a";
             lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
             }
-            colorIntensity = "0.4"
+            colorIntensity ="0.4
 
 - Lantern"
-            dimLight = "60";
-            brightLight = "30";
+            dimLight = 60;
+            brightLight = 30;
             lightColor = "#a2642a";
             lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
             };
-            colorIntensity = "0.4"
+            colorIntensity = 0.4
         
 - Candle
-            dimLight = "10";
-            brightLight = "2";
+            dimLight = 10;
+            brightLight = 2;
             lightColor = "#a2642a";
             lightAnimation = {
                 'type': 'torch',
                 'speed': 1,
                 'intensity': 1
             };
-            colorIntensity = "0.2"
+            colorIntensity = 0.2
 
+- Flashlight
+            dimLight = 60,
+            brightLight = 30,
+            lightColor = "#8bfdf6",
+            colorIntensity = 0.3,
 
 ## Altering presets or adding new ones
 - You can now add to; remove, or alter the existing presets
