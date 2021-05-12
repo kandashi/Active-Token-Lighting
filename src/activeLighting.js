@@ -69,6 +69,7 @@ class ATL {
     }
     static ready() {
         const gm = game.user === game.users.find((u) => u.isGM && u.active)
+
         Hooks.on("updateActiveEffect", async (effect, options) => {
             if (!gm) return;
             if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
@@ -91,10 +92,9 @@ class ATL {
             if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
             let ATLeffects = effect.parent.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             ATL.applyEffects(effect.parent, ATLeffects)
+
         })
     }
-
-
 
     static AddPreset(name, object) {
         if (!name) {
@@ -484,7 +484,6 @@ class ATL {
                             resultTmp = JSON.parse(fixedJSON);
                         }
                     }
-
                     overrides[updateKey] = resultTmp ? resultTmp : result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") {
