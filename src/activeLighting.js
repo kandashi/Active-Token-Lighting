@@ -43,6 +43,14 @@ class ATL {
                 colorIntensity: 0.2,
                 id: "ATLPresetCandle"
 
+            },
+            {
+                name: "flashlight",
+                dimLight: 60,
+                brightLight: 30,
+                lightColor: "#8bfdf6",
+                colorIntensity: 0.3,
+                id: "ATLPresetFlashlight"
             }
         ]
         game.settings.register("ATL", "size", {
