@@ -409,7 +409,7 @@ class ATL {
         let tokenArray = []
         if (!link) tokenArray = [entity.token?.object]
         else tokenArray = entity.getActiveTokens()
-        if(tokenArray === []) return;
+        if (tokenArray === []) return;
         let overrides = {};
         const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
 
@@ -435,7 +435,7 @@ class ATL {
                 let preset = presetArray.find(i => i.name === change.value)
                 overrides = duplicate(preset);
                 const stringCheck = (element) => typeof element === "string"
-                if([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(stringCheck)) {
+                if ([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(stringCheck)) {
                     ui.notifications.error("ATL: preset string error")
                 }
                 delete overrides.id
@@ -571,43 +571,7 @@ class ATL {
         }
         return value;
     }
-
 }
-
-
-
 Hooks.on('init', ATL.init);
 Hooks.on('ready', ATL.ready)
-Hooks.on("canvasReady", () => {
-    if (game.settings.get("ATL", "conversion") !== "0.2.0") {
-        performConversion()
-    }
-
-
-    function performConversion() {
-        let presetArray = game.settings.get("ATL", "presets")
-        for (let preset of presetArray) {
-            console.log(`ATL: Updating preset ${preset.name}`)
-            for (const [key, value] of Object.entries(preset)) {
-                if (key === "lightEffect") {
-                    preset.lightAnimation = preset.lightEffect
-                    delete preset.lightEffect
-                }
-                if (key === "lightAngle" && typeof value !== "number") {
-                    preset.lightAngle = parseInt(preset.lightAngle)
-                }
-                if (key === "sightAngle" && typeof value !== "number") {
-                    preset.sightAngle = typeof parseInt(preset.sightAngle) === "number" ? parseInt(preset.sightAngle) : 0;
-                }
-            }
-        }
-        console.log("ATL: Update finished")
-        game.settings.set("ATL", "presets", presetArray)
-        game.settings.set("ATL", "conversion", "0.2.0")
-    }
-
-});
 Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
-
-
-
