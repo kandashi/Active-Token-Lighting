@@ -5,7 +5,7 @@
 	"author": "Kandashi",
 	"version": "0.2.12",
 	"minimumCoreVersion": "0.8.3",
-	"compatibleCoreVersion": "0.8.3",
+	"compatibleCoreVersion": "0.8.5",
 
 	"scripts": [
 		"src/activeLighting.js"

@@ -1,4 +1,3 @@
-
 class ATL {
 
     static init() {
@@ -459,7 +458,7 @@ class ATL {
                 }
             }
             else {
-                let preValue = overrides[updateKey] ? overrides[updateKey] : originals[updateKey] || null;
+                let preValue = (overrides[updateKey] ? overrides[updateKey] : originals[updateKey]) ?? null;
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (result !== null) {
                     let resultTmp;
@@ -570,13 +569,14 @@ class ATL {
     static applyOverride(token, change, originals, current) {
         let { key, value, mode } = change;
         key = key.slice(4)
-        //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
+        // current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
         if (mode === CONST.ACTIVE_EFFECT_MODES.UPGRADE) {
             if ((typeof (current) === "number") && (current >= Number(value))) return null;
         }
         if (mode === CONST.ACTIVE_EFFECT_MODES.DOWNGRADE) {
             if ((typeof (current) === "number") && (current < Number(value))) return null;
         }
+        if (typeof current === "number") return Number(value);
         return value;
     }
 }
