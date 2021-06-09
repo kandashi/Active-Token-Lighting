@@ -3,7 +3,7 @@
 	"title": "Active Token Lighting",
 	"description": "Active Token Lighting",
 	"author": "Kandashi",
-	"version": "0.2.12",
+	"version": "0.2.14",
 	"minimumCoreVersion": "0.8.3",
 	"compatibleCoreVersion": "0.8.5",
 
@@ -15,6 +15,7 @@
 			"name": "Token Lighting Premade",
 			"label": "Token Lighting premade",
 			"path": "packs/premade",
+			"system" : "dnd5e",
 			"entity": "Item",
 			"module": "ATL"
 		}
