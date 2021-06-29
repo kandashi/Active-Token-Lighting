@@ -12,7 +12,7 @@ X can be:
 - brightSight
 - sightAngle
 - lightColor
-- colorIntensity
+- lightAlpha
 - lightAngle
 - lightAnimation (for this enter an object as the value, eg. `{"type":"torch","speed":1,"intensity":1}` )
 
@@ -43,7 +43,7 @@ Modes will act the same as standard active effects
                 'speed': 1,
                 'intensity': 1
             }
-            colorIntensity ="0.4
+            lightAlpha ="0.4
 
 - Lantern"
             dimLight = 60;
@@ -54,7 +54,7 @@ Modes will act the same as standard active effects
                 'speed': 1,
                 'intensity': 1
             };
-            colorIntensity = 0.4
+            lightAlpha = 0.4
         
 - Candle
             dimLight = 10;
@@ -65,13 +65,13 @@ Modes will act the same as standard active effects
                 'speed': 1,
                 'intensity': 1
             };
-            colorIntensity = 0.2
+            lightAlpha = 0.2
 
 - Flashlight
             dimLight = 60,
             brightLight = 30,
             lightColor = "#8bfdf6",
-            colorIntensity = 0.3,
+            lightAlpha = 0.3,
 
 ## Altering presets or adding new ones
 - You can now add to; remove, or alter the existing presets
