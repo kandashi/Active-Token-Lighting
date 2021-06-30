@@ -455,8 +455,6 @@ class ATL {
                 }
                 delete overrides.id
                 delete overrides.name
-                overrides.lightAlpha = overrides.colorIntensity * overrides.colorIntensity
-                delete overrides.colorIntensity
                 overrides.lightAngle = parseInt(overrides?.lightAngle) || originals?.lightAngle || 360
                 overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
 
