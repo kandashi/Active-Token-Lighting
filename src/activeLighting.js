@@ -12,7 +12,7 @@ class ATL {
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: 0.4,
+                lightAlpha: 0.4,
                 id: "ATLPresetTorch"
             },
             {
@@ -25,7 +25,7 @@ class ATL {
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: 0.4,
+                lightAlpha: 0.4,
                 id: "ATLPresetLantern"
 
             },
@@ -39,7 +39,7 @@ class ATL {
                     'speed': 1,
                     'intensity': 1
                 },
-                colorIntensity: 0.2,
+                lightAlpha: 0.2,
                 id: "ATLPresetCandle"
 
             },
@@ -48,7 +48,7 @@ class ATL {
                 dimLight: 60,
                 brightLight: 30,
                 lightColor: "#8bfdf6",
-                colorIntensity: 0.3,
+                lightAlpha: 0.3,
                 id: "ATLPresetFlashlight"
             }
         ]
@@ -70,7 +70,7 @@ class ATL {
             name: "conversion level",
             scope: "world",
             config: false,
-            default: "0",
+            default: "0.2.15",
             type: String,
         });
     }
@@ -161,7 +161,7 @@ class ATL {
 
     static GeneratePreset(preset, copy) {
 
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightAnimation: lightAnimation, colorIntensity, lightAngle, name } = preset ? preset : 0
+        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightAnimation, lightAlpha, lightAngle, name } = preset ? preset : 0
         switch (copy) {
             case true: name = `${name} (copy)`;
                 break;
@@ -169,14 +169,14 @@ class ATL {
                 break;
             default: name = ""
         }
-        if (dimLight === undefined) dimLight = 0;
-        if (brightLight === undefined) brightLight = 0
-        if (dimSight === undefined) dimSight = 0
-        if (brightSight === undefined) brightSight = 0
-        if (sightAngle === undefined) sightAngle = 360
-        if (lightColor === undefined) lightColor = "#FFFFFF"
-        if (lightAngle === undefined) lightAngle = 360
-        if (colorIntensity === undefined) colorIntensity = 1
+        if (dimLight === undefined) dimLight = "";
+        if (brightLight === undefined) brightLight = ""
+        if (dimSight === undefined) dimSight = ""
+        if (brightSight === undefined) brightSight = ""
+        if (sightAngle === undefined) sightAngle = ""
+        if (lightColor === undefined) lightColor = ""
+        if (lightAngle === undefined) lightAngle = ""
+        if (lightAlpha === undefined) lightAlpha = ""
         if (lightAnimation === undefined) lightAnimation = {}
 
 
@@ -253,7 +253,7 @@ class ATL {
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="lightAlpha"> Light Intensity: </label>
-                <input id="lightAlpha" name="lightAlpha" type="number" min="0" max="1" placeholder="0-1" value="${colorIntensity}"></input>
+                <input id="lightAlpha" name="lightAlpha" type="number" min="0" max="1" placeholder="0-1" value="${lightAlpha}"></input>
             </div>
             <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
                 <label for="lightColor"> Light Color: </label>
@@ -283,20 +283,20 @@ class ATL {
                 one: {
                     label: "Add Preset",
                     icon: `<i class="fas fa-check"></i>`,
-                    callback: (html) => {
+                    callback: async (html) => {
                         let id = randomID()
                         let name = html.find("#name")[0].value
-                        let dimLight = Number(html.find("#dimLight")[0].value)
-                        let brightLight = Number(html.find("#brightLight")[0].value)
-                        let dimSight = Number(html.find("#dimSight")[0].value)
-                        let brightSight = Number(html.find("#brightSight")[0].value)
+                        let dimLight = await ATL.checkString(html.find("#dimLight")[0].value)
+                        let brightLight = await ATL.checkString(html.find("#brightLight")[0].value)
+                        let dimSight = await ATL.checkString(html.find("#dimSight")[0].value)
+                        let brightSight = await ATL.checkString(html.find("#brightSight")[0].value)
                         let lightColor = html.find("#lightColor")[0].value
-                        let sightAngle = Number(html.find("#sightAngle")[0].value)
-                        let lightAlpha = Number(html.find("#lightAlpha")[0].value)
-                        let lightAngle = Number(html.find("#lightAngle")[0].value)
+                        let sightAngle = await ATL.checkString(html.find("#sightAngle")[0].value)
+                        let lightAlpha = await ATL.checkString(html.find("#lightAlpha")[0].value)
+                        let lightAngle = await ATL.checkString(html.find("#lightAngle")[0].value)
                         let animationType = html.find("#animationType")[0].value
-                        let animationSpeed = Number(html.find("#animationSpeed")[0].value)
-                        let animationIntensity = Number(html.find("#animationIntensity")[0].value)
+                        let animationSpeed = await ATL.checkString(html.find("#animationSpeed")[0].value)
+                        let animationIntensity = await ATL.checkString(html.find("#animationIntensity")[0].value)
 
                         let object = {
                             name: name,
@@ -308,7 +308,7 @@ class ATL {
                                 'speed': animationSpeed,
                                 'intensity': animationIntensity
                             },
-                            colorIntensity: lightAlpha,
+                            lightAlpha: lightAlpha,
                             dimSight: dimSight,
                             brightSight: brightSight,
                             sightAngle: parseInt(sightAngle),
@@ -325,6 +325,11 @@ class ATL {
             }
 
         }).render(true)
+    }
+
+    static async checkString(value) {
+        if (value === "") return ""
+        else return Number(value)
     }
 
     static async UpdatePresets() {
@@ -441,8 +446,11 @@ class ATL {
                 let presetArray = game.settings.get("ATL", "presets")
                 let preset = presetArray.find(i => i.name === change.value)
                 overrides = duplicate(preset);
-                const stringCheck = (element) => typeof element === "string"
-                if ([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(stringCheck)) {
+                const checkString = (element) => typeof element === "string"
+                for (const [key, value] of Object.entries(overrides)) {
+                    if (value === "") delete overrides[key]
+                }
+                if ([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(checkString)) {
                     ui.notifications.error("ATL: preset string error")
                 }
                 delete overrides.id
@@ -460,6 +468,7 @@ class ATL {
             else {
                 let preValue = (overrides[updateKey] ? overrides[updateKey] : originals[updateKey]) ?? null;
                 let result = ATL.apply(entity, change, originals, preValue);
+                if (change.key === "ATL.lightAlpha") result = result * result
                 if (result !== null) {
                     let resultTmp;
                     if (updateKey === "lightAnimation" && typeof result === "string") {
@@ -580,6 +589,51 @@ class ATL {
         return value;
     }
 }
+class ATLUpdate {
+
+    static runUpdates() {
+        switch (game.settings.get("ATL", "conversion")) {
+            case "0": { }
+            case "0.2.0": {
+                ATLUpdate.lightAlphaUpdate()
+            }
+            case "0.2.15": {
+                console.log("ATL: no conversion needed")
+            }
+        }
+    }
+    static lightAlphaUpdate(){
+        let presets = duplicate(game.settings.get("ATL", "presets"))
+        for (let preset of presets) {
+            if (!!preset.colorIntensity) {
+                preset.lightAlpha = preset.colorIntensity
+                delete preset.colorIntensity
+            }
+        }
+        new Dialog({
+            title: "ATL Preset Update",
+            content: `Do you wish to mass auto-update your ATL presets, one time choice.<br>
+            Changes: internal change of "colorIntensity" to "lightAlpha"`,
+            buttons: {
+                one: {
+                    label: "Yes",
+                    callback: async () => {
+                        await game.settings.set("ATL", "presets", presets)
+                        await game.settings.set("ATL", "conversion", "0.2.15")
+                    }
+                },
+                two: {
+                    label: "No, I'll update myself",
+                    callback: async () => {
+                        await game.settings.set("ATL", "conversion", "0.2.15")
+
+                    }
+                }
+            }
+        }).render(true)
+    }
+}
 Hooks.on('init', ATL.init);
 Hooks.on('ready', ATL.ready)
 Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
+Hooks.on("ready", ATLUpdate.runUpdates)
