@@ -20,6 +20,9 @@
 			"module": "ATL"
 		}
 	],
+	"styles": [
+		"/styles/ATL.css"
+	  ],
 	"url": "https://github.com/kandashi/Active-Token-Lighting",
 	"manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",
 	"download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip",
