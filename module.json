@@ -1,25 +1,29 @@
 {
 	"name": "ATL",
-	"title": "Active Token Lighting",
-	"description": "Active Token Lighting",
+	"title": "Active Token Effects",
+	"description": "Active Token Effects",
 	"author": "Kandashi",
 	"version": "0.2.14",
 	"minimumCoreVersion": "0.8.3",
 	"compatibleCoreVersion": "0.8.5",
 
-	"scripts": [
-		"src/activeLighting.js"
+	"esmodules": [
+		"src/activeLighting.js",
+		"src/updateManager.js"
 	],
 	"packs": [
 		{
-			"name": "Token Lighting Premade",
-			"label": "Token Lighting premade",
+			"name": "Token Effects Premade",
+			"label": "Token Effects premade",
 			"path": "packs/premade",
 			"system" : "dnd5e",
 			"entity": "Item",
 			"module": "ATL"
 		}
 	],
+	"styles": [
+		"/styles/ATL.css"
+	  ],
 	"url": "https://github.com/kandashi/Active-Token-Lighting",
 	"manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",
 	"download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip",

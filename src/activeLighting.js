@@ -1,54 +1,57 @@
+import { ATLUpdate } from "./updateManager.js";
 class ATL {
 
     static init() {
         let defaultPresets = [
             {
                 name: "torch",
-                dimLight: 40,
-                brightLight: 20,
-                lightColor: "#a2642a",
-                lightAnimation: {
-                    'type': 'torch',
-                    'speed': 1,
-                    'intensity': 1
+                light: {
+                    dim: 40,
+                    bright: 20,
+                    color: "#a2642a",
+                    animation: {
+                        'type': 'torch',
+                        'speed': 1,
+                        'intensity': 1
+                    },
+                    alpha: 0.7,
                 },
-                lightAlpha: 0.4,
                 id: "ATLPresetTorch"
             },
             {
                 name: "lantern",
-                dimLight: 60,
-                brightLight: 30,
-                lightColor: "#a2642a",
-                lightAnimation: {
+                dim: 60,
+                bright: 30,
+                color: "#a2642a",
+                animation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
                 },
-                lightAlpha: 0.4,
+                alpha: 0.4,
                 id: "ATLPresetLantern"
 
             },
             {
                 name: "candle",
-                dimLight: 10,
-                brightLight: 2,
-                lightColor: "#a2642a",
-                lightAnimation: {
+                dim: 10,
+                bright: 2,
+                color: "#a2642a",
+                animation: {
                     'type': 'torch',
                     'speed': 1,
                     'intensity': 1
                 },
-                lightAlpha: 0.2,
+                alpha: 0.2,
                 id: "ATLPresetCandle"
 
             },
             {
                 name: "flashlight",
-                dimLight: 60,
-                brightLight: 30,
-                lightColor: "#8bfdf6",
-                lightAlpha: 0.3,
+                dim: 60,
+                bright: 30,
+                color: "#8bfdf6",
+                alpha: 0.3,
                 id: "ATLPresetFlashlight"
             }
         ]
@@ -161,118 +164,202 @@ class ATL {
 
     static GeneratePreset(preset, copy) {
 
-        let { dimLight, brightLight, dimSight, brightSight, sightAngle, lightColor, lightAnimation, lightAlpha, lightAngle, name } = preset ? preset : 0
+        let { light, dimSight, brightSight, sightAngle, name, height, width, scale, id } = preset ? preset : 0
+        let { dim, bright, color, animation, alpha, angle, coloration, contrast, gradual, luminosity, saturation, shadows } = light ? light : 0
         switch (copy) {
             case true: name = `${name} (copy)`;
                 break;
             case false: name = name;
                 break;
             default: name = ""
+
         }
-        if (dimLight === undefined) dimLight = "";
-        if (brightLight === undefined) brightLight = ""
+        if (height === undefined) height = "";
+        if (width === undefined) width = "";
+        if (scale === undefined) scale = "";
+        if (dim === undefined) dim = "";
+        if (bright === undefined) bright = ""
         if (dimSight === undefined) dimSight = ""
         if (brightSight === undefined) brightSight = ""
         if (sightAngle === undefined) sightAngle = ""
-        if (lightColor === undefined) lightColor = ""
-        if (lightAngle === undefined) lightAngle = ""
-        if (lightAlpha === undefined) lightAlpha = ""
-        if (lightAnimation === undefined) lightAnimation = {}
+        if (color === undefined) color = ""
+        if (angle === undefined) angle = ""
+        if (alpha === undefined) alpha = ""
+        if (animation === undefined) animation = {}
+        if (coloration === undefined) coloration = ""
+        if (contrast === undefined) contrast = ""
+        if (gradual === undefined) gradual = false
+        if (luminosity === undefined) luminosity = ""
+        if (saturation === undefined) saturation = ""
+        if (shadows === undefined) shadows = ""
 
 
-        let lightTypes = `<option selected value="none"> None</option>
-        <option value="torch" ${lightAnimation.type === "torch" ? 'selected' : ''}> Torch</option>
-        <option value="pulse" ${lightAnimation.type === "pulse" ? 'selected' : ''}> Pulse</option>
-        <option value="chroma" ${lightAnimation.type === "chroma" ? 'selected' : ''}> Chroma</option>
-        <option value="wave" ${lightAnimation.type === "wave" ? 'selected' : ''}> Pulsing Wave</option>
-        <option value="fog" ${lightAnimation.type === "fog" ? 'selected' : ''}> Swirling Fog</option>
-        <option value="sunburst" ${lightAnimation.type === "sunburst" ? 'selected' : ''}> Sunburst</option>
-        <option value="dome" ${lightAnimation.type === "dome" ? 'selected' : ''}> Light Dome</option>
-        <option value="emanation" ${lightAnimation.type === "emanation" ? 'selected' : ''}> Mysterious Emanation</option>
-        <option value="hexa" ${lightAnimation.type === "hexa" ? 'selected' : ''}>  Hexa Dome</option>
-        <option value="ghost" ${lightAnimation.type === "ghost" ? 'selected' : ''}> Ghostly Light</option>
-        <option value="energy" ${lightAnimation.type === "energy" ? 'selected' : ''}> Energy Field</option>
-        <option value="roiling" ${lightAnimation.type === "roiling" ? 'selected' : ''}> Roiling Mass (Darkness)</option>
-        <option value="hole" ${lightAnimation.type === "hole" ? 'selected' : ''}> Black Hole (Darkness)</option>`
+        let colorationTypes = ``
+        for (let [k, v] of Object.entries(AdaptiveLightingShader.COLORATION_TECHNIQUES)) {
+            let name = game.i18n.localize(v.label)
+            colorationTypes += `<option value="${v.id}" ${coloration === v.id ? "selected" : ""}>${name}</option>`;
+        }
 
+        let lightTypes = `<option selected value="none"> None</option>`
+        for (let [k, v] of Object.entries(CONFIG.Canvas.lightAnimations)) {
+            let name = game.i18n.localize(v.label)
+            lightTypes += `<option value="${k.toLocaleLowerCase()}" ${animation.type === k ? "selected" : ""}>${name}</option>`;
+        }
 
         if (game.modules.get("CommunityLighting")?.active) {
             lightTypes += `
             <optgroup label= "Blitz" id="animationType">
-            <option value="BlitzFader" ${lightAnimation.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
-            <option value="BlitzLightning" ${lightAnimation.type === "BlitzLightning" ? 'selected' : ''}>Lightning (expirmental)</option>
-            <option value="BlitzElectric Fault" ${lightAnimation.type === "BlitzElectric Fault" ? 'selected' : ''}>Electrical Fault</option>
-            <option value="BlitzSimple Flash" ${lightAnimation.type === "BlitzSimple Flash" ? 'selected' : ''}>Simple Flash</option>
-            <option value="BlitzRBG Flash" ${lightAnimation.type === "BlitzRBG Flash" ? 'selected' : ''}>RGB Flash</option>
-            <option value="BlitzPolice Flash" ${lightAnimation.type === "BlitzPolice Flash" ? 'selected' : ''}>Police Flash</option>
-            <option value="BlitzStatic Blur" ${lightAnimation.type === "BlitzStatic Blur" ? 'selected' : ''}> Static Blur</option>
-            <option value="BlitzAlternate Torch" ${lightAnimation.type === "BlitzAlternate Torch" ? 'selected' : ''}>Alternate Torch</option>
-            <option value="BlitzBlurred Torch" ${lightAnimation.type === "BlitzBlurred Torch" ? 'selected' : ''}>Blurred Torch</option>
-            <option value="BlitzGrid Force-Field Colorshift" ${lightAnimation.type === "BlitzGrid Force-Field Colorshift" ? 'selected' : ''}>Grid Force-Field Colorshift</option>
+            <option value="BlitzFader" ${animation.type === "BlitzFader" ? 'selected' : ''}>Fader</option>
+            <option value="BlitzLightning" ${animation.type === "BlitzLightning" ? 'selected' : ''}>Lightning (expirmental)</option>
+            <option value="BlitzElectric Fault" ${animation.type === "BlitzElectric Fault" ? 'selected' : ''}>Electrical Fault</option>
+            <option value="BlitzSimple Flash" ${animation.type === "BlitzSimple Flash" ? 'selected' : ''}>Simple Flash</option>
+            <option value="BlitzRBG Flash" ${animation.type === "BlitzRBG Flash" ? 'selected' : ''}>RGB Flash</option>
+            <option value="BlitzPolice Flash" ${animation.type === "BlitzPolice Flash" ? 'selected' : ''}>Police Flash</option>
+            <option value="BlitzStatic Blur" ${animation.type === "BlitzStatic Blur" ? 'selected' : ''}> Static Blur</option>
+            <option value="BlitzAlternate Torch" ${animation.type === "BlitzAlternate Torch" ? 'selected' : ''}>Alternate Torch</option>
+            <option value="BlitzBlurred Torch" ${animation.type === "BlitzBlurred Torch" ? 'selected' : ''}>Blurred Torch</option>
+            <option value="BlitzGrid Force-Field Colorshift" ${animation.type === "BlitzGrid Force-Field Colorshift" ? 'selected' : ''}>Grid Force-Field Colorshift</option>
             </optgroup>
             <optgroup label="SecretFire" id="animationType">
-            <option value="SecretFireGrid Force-Field" ${lightAnimation.type === "SecretFireGrid Force-Field" ? 'selected' : ''}>Grid Force-Field</option>
-            <option value="SecretFireSmoke Patch" ${lightAnimation.type === "SecretFireSmoke Patch" ? 'selected' : ''}>Smoke Patch</option>
-            <option value="SecretFireStar Light" ${lightAnimation.type === "SecretFireStar Light" ? 'selected' : ''}>Star Light</option>
-            <option value="SecretFireStar Light Disco" ${lightAnimation.type === "SecretFireStar Light Disco" ? 'selected' : ''}>Star Light Disco</option>
+            <option value="SecretFireGrid Force-Field" ${animation.type === "SecretFireGrid Force-Field" ? 'selected' : ''}>Grid Force-Field</option>
+            <option value="SecretFireSmoke Patch" ${animation.type === "SecretFireSmoke Patch" ? 'selected' : ''}>Smoke Patch</option>
+            <option value="SecretFireStar Light" ${animation.type === "SecretFireStar Light" ? 'selected' : ''}>Star Light</option>
+            <option value="SecretFireStar Light Disco" ${animation.type === "SecretFireStar Light Disco" ? 'selected' : ''}>Star Light Disco</option>
             </optgroup>
         `
         }
 
         let dialogContent = `
         <form>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-           
-                    <label for="name"> Preset Name: </label>
-                    <input id="name" name="name" type="text" value="${name}"></input>
+            <div class="form-group">
+                <label>Preset Name</label>
+                <input id="name" name="${id}" type="text" value="${name}"></input>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-
-                    <label for="dimLight"> Dim Light: </label>
-                    <input id="dimLight" name="dimLight" type="number" value="${dimLight}"></input>
+            <h3>Token Data</h3>
+            <div class="form-group slim ATL-sub-group">
+                <label>Size</label>
+                <div class="form-fields">
+                        <label>Height</label>
+                        <input id="height" name="height" type="number" value="${height}"></input>
+                        <label>Width</label>
+                        <input id="width" name="width" type="number" value="${width}"></input>
+                        <label>Scale</label>
+                        <input id="scale" name="scale" type="number" value="${scale}"></input>
+                        
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="brightLight"> Bright Light: </label>
-                    <input id="brightLight" name="brightLight" type="number" value="${brightLight}"></input>
+            <div class="form-group slim ATL-sub-group">
+                <label>Vision</label>
+                <div class="form-fields">
+                        <label>Dim</label>
+                        <input id="dimSight" name="dimSight" type="number" value="${dimSight}"></input>
+                        <label>Bright</label>
+                        <input id="brightSight" name="brightSight" type="number" value="${brightSight}"></input>
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="dimSight"> Dim Sight: </label>
-                    <input id="dimSight" name="dimSight" type="number" value="${dimSight}"></input>
-            </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="brightSight"> Bright Sight: </label>
-                    <input id="brightSight" name="brightSight" type="number" value="${brightSight}"></input>
-            </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="lightAngle"> Light Angle: </label>
-                    <input id="lightAngle" name="lightAngle" type="number" min="0" max="360" step="1" value="${lightAngle}"></input>
-            </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="sightAngle"> Sight Angle: </label>
+            <div class="form-group slim ATL-sub-group">
+            <label>Vision Angle</label>
+                <div class="form-fields">
                     <input id="sightAngle" name="sightAngle" type="number" min="0" max="360" step="1" value="${sightAngle}"></input>
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                <label for="lightAlpha"> Light Intensity: </label>
-                <input id="lightAlpha" name="lightAlpha" type="number" min="0" max="1" placeholder="0-1" value="${lightAlpha}"></input>
+            <h3>Lighting</h3>
+            <div class="form-group slim ATL-sub-group">
+                <label>Light Radius</label>
+                <div class="form-fields ">
+                        <label>Dim</label>
+                        <input id="dim" name="dim" type="number" value="${dim}"></input>
+                        <label>Bright</label>
+                        <input id="bright" name="bright" type="number" value="${bright}"></input>
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                <label for="lightColor"> Light Color: </label>
-                <input type="color" id="lightColor" name="lightColor" value="${lightColor}">
+            <div class="form-group slim ATL-sub-group">
+                <label>Emission Angle</label>
+                <div class="form-fields">
+                    <input id="angle" name="angle" type="number" min="0" max="360" step="1" value="${angle}"></input>
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                <label for="animationType"> Animation Type: </label>
-                <select id="animationType" name="animationType" >
-                    ${lightTypes}
-                </select>
+            <div class="form-group slim ATL-sub-group">
+                <label for="color">Light Color</label>
+                <input type="color" id="color" name="color" value="${color}">
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="animationSpeed"> Animation Speed: </label>
-                    <input id="animationSpeed" name="animationSpeed" type="range" min="1" max="10" step="1" value="${lightAnimation?.speed}"></input>
+            <div class="form-group slim ATL-sub-group">
+            <label>Color Intensity</label>
+                <div class="form-fields">
+                    <input id="alpha" name="alpha" type="number" min="0" max="1" placeholder="0-1" value="${alpha}"></input>
+                </div>
             </div>
-            <div class="form-group" clear: both; display: flex; flex-direction: row; flex-wrap: wrap;margin: 3px 0;align-items: center;">
-                    <label for="animationIntensity"> Animation Intensity: </label>
-                    <input id="animationIntensity" name="animationIntensity" type="range" min="1" max="10" step="1" value="${lightAnimation?.intensity}"></input>
+            <h3>Animation</h3>
+            <div class="form-group ATL-sub-group">
+                <label>Animation Type</label>
+                <div class="form-fields">
+                    <select id="animationType" name="animationType" >${lightTypes}</select>
+                </div>
             </div>
+            <div class="form-group ATL-sub-group" ">
+                <label>Animation Speed</label>
+                <div class="form-fields">
+                    <input id="animationSpeed" name="animationSpeed" type="range" min="1" max="10" step="1" value="${animation?.speed}"></input>
+                </div>
+            </div>
+            <div class="form-group ATL-sub-group">
+                <label>Reverse Direction</label>
+                <div class="form-fields">
+                    <input type="checkbox" id="animationReverse" name="animationReverse" ${animation?.reverse ? "checked" : ""} >
+                </div>
+            </div>
+            <div class="form-group ATL-sub-group">
+                <label>Animation Intensity</label>
+                <div class="form-fields">
+                    <input id="animationIntensity" name="animationIntensity" type="range" min="1" max="10" step="1" value="${animation?.intensity}"></input>
+                </div>
+            </div>
+            <h3>Advanced Animation</h3>
+            <div class="form-group ATL-sub-group">
+                <label>Coloration Technique</label>
+                <div class="form-fields">
+                    <select id="lightColoration" name="lightColoration" data-dtype="Number">
+                    ${colorationTypes}
+                    </select>
+                </div>
+            </div>
+    
+            <div class="form-group ATL-sub-group">
+                <label>Luminosity</label>
+                <div class="form-fields">
+                    <input type="range" id="lightLuminosity" name="lightLuminosity" value="${luminosity}" min="-1" max="1" step="0.05">
+         <span class="range-value">0.5</span>
+                </div>
+            </div>
+    
+            <div class="form-group ATL-sub-group">
+                <label>Gradual Illumination</label>
+                <div class="form-fields">
+                    <input type="checkbox" id="lightGradual" name="lightGradual" ${gradual ? "checked" : ""}>
+                </div>
+            </div>
+    
+            <div class="form-group ATL-sub-group">
+                <label>Background Saturation</label>
+                <div class="form-fields">
+                    <input type="range" id="lightSaturation" name="lightSaturation" value="${saturation}" min="-1" max="1" step="0.05">
+                </div>
+            </div>
+    
+            <div class="form-group ATL-sub-group">
+                <label>Background Contrast</label>
+                <div class="form-fields">
+                    <input type="range" id="lightContrast" name="lightContrast" value="${contrast}" min="-1" max="1" step="0.05">
+                </div>
+            </div>
+    
+            <div class="form-group ATL-sub-group">
+                <label>Background Shadows</label>
+                <div class="form-fields">
+                    <input type="range" id="lightShadows" name="lightShadows" value="${shadows}" min="0" max="1" step="0.05">
+                </div>
+            </div>
+
                 `;
 
 
@@ -284,38 +371,63 @@ class ATL {
                     label: "Add Preset",
                     icon: `<i class="fas fa-check"></i>`,
                     callback: async (html) => {
-                        let id = randomID()
+                        let id = html.find("#name")[0].name || randomID()
                         let name = html.find("#name")[0].value
-                        let dimLight = await ATL.checkString(html.find("#dimLight")[0].value)
-                        let brightLight = await ATL.checkString(html.find("#brightLight")[0].value)
+                        let height = await ATL.checkString(html.find("#height")[0].value)
+                        let width = await ATL.checkString(html.find("#width")[0].value)
+                        let scale = await ATL.checkString(html.find("#scale")[0].value)
+                        let dim = await ATL.checkString(html.find("#dim")[0].value)
+                        let bright = await ATL.checkString(html.find("#bright")[0].value)
                         let dimSight = await ATL.checkString(html.find("#dimSight")[0].value)
                         let brightSight = await ATL.checkString(html.find("#brightSight")[0].value)
-                        let lightColor = html.find("#lightColor")[0].value
+                        let color = html.find("#color")[0].value
                         let sightAngle = await ATL.checkString(html.find("#sightAngle")[0].value)
-                        let lightAlpha = await ATL.checkString(html.find("#lightAlpha")[0].value)
-                        let lightAngle = await ATL.checkString(html.find("#lightAngle")[0].value)
+                        let alpha = await ATL.checkString(html.find("#alpha")[0].value)
+                        let angle = await ATL.checkString(html.find("#angle")[0].value)
                         let animationType = html.find("#animationType")[0].value
                         let animationSpeed = await ATL.checkString(html.find("#animationSpeed")[0].value)
                         let animationIntensity = await ATL.checkString(html.find("#animationIntensity")[0].value)
+                        let animationReverse = html.find("#animationIntensity").is(":checked")
+                        let coloration = await ATL.checkString(html.find("#lightColoration")[0].value)
+                        let luminosity = await ATL.checkString(html.find("#lightLuminosity")[0].value)
+                        let gradual = html.find("#lightGradual").is(":checked")
+                        let saturation = await ATL.checkString(html.find("#lightSaturation")[0].value)
+                        let contrast = await ATL.checkString(html.find("#lightContrast")[0].value)
+                        let shadows = await ATL.checkString(html.find("#lightShadows")[0].value)
 
                         let object = {
                             name: name,
-                            dimLight: dimLight,
-                            brightLight: brightLight,
-                            lightColor: lightColor,
-                            lightAnimation: {
-                                'type': animationType,
-                                'speed': animationSpeed,
-                                'intensity': animationIntensity
+                            height: height,
+                            width: width,
+                            scale: scale,
+                            light: {
+                                dim: dim,
+                                bright: bright,
+                                color: color,
+                                animation: {
+                                    'type': animationType,
+                                    'speed': animationSpeed,
+                                    'intensity': animationIntensity,
+                                    'reverse': animationReverse
+                                },
+                                alpha: alpha,
+                                angle: angle,
+                                coloration: coloration,
+                                luminosity: luminosity,
+                                gradual: gradual,
+                                saturation: saturation,
+                                contrast: contrast,
+                                shadows: shadows,
                             },
-                            lightAlpha: lightAlpha,
                             dimSight: dimSight,
                             brightSight: brightSight,
-                            sightAngle: parseInt(sightAngle),
-                            lightAngle: parseInt(lightAngle),
+                            sightAngle: sightAngle,
+
                             id: id
                         }
-                        ATL.AddPreset(name, object)
+                        let final = Object.fromEntries(Object.entries(object).filter(([_, v]) => v != ""));
+
+                        ATL.AddPreset(name, final)
                     }
                 },
                 two: {
@@ -325,6 +437,7 @@ class ATL {
             }
 
         }).render(true)
+
     }
 
     static async checkString(value) {
@@ -416,6 +529,7 @@ class ATL {
         }
     }
     static async applyEffects(entity, effects) {
+        if(entity.documentName !== "Actor") return;
         let link = getProperty(entity, "data.token.actorLink")
         if (link === undefined) link = true
         let tokenArray = []
@@ -450,12 +564,12 @@ class ATL {
                 for (const [key, value] of Object.entries(overrides)) {
                     if (value === "") delete overrides[key]
                 }
-                if ([overrides.dimLight, overrides.dimSight, overrides.brightLight, overrides.brightSight].some(checkString)) {
+                if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
                     ui.notifications.error("ATL: preset string error")
                 }
                 delete overrides.id
                 delete overrides.name
-                overrides.lightAngle = parseInt(overrides?.lightAngle) || originals?.lightAngle || 360
+                overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
                 overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
 
                 for (const [key, value] of Object.entries(overrides)) {
@@ -464,9 +578,9 @@ class ATL {
                 }
             }
             else {
-                let preValue = (overrides[updateKey] ? overrides[updateKey] : originals[updateKey]) ?? null;
+                let preValue = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey)) ?? null;
                 let result = ATL.apply(entity, change, originals, preValue);
-                if (change.key === "ATL.lightAlpha") result = result * result
+                if (change.key === "ATL.alpha") result = result * result
                 if (result !== null) {
                     let resultTmp;
                     if (updateKey === "lightAnimation" && typeof result === "string") {
@@ -540,9 +654,21 @@ class ATL {
         }
     }
 
+    static switchType(key, value) {
+        let numeric = ["light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
+        let Boolean = ["mirrorX", "mirrorY"]
+        if (numeric.includes(key)) return parseFloat(value)
+        else if (Boolean.includes(key)) {
+            if (value === "true") return true
+            if (value === "false") return false
+        }
+        else return value
+    }
+
     static applyAdd(token, change, originals, current) {
         let { key, value } = change;
         key = key.slice(4)
+        value = ATL.switchType(key, value)
         //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
         const ct = getType(current);
         let update = null;
@@ -567,6 +693,8 @@ class ATL {
     static applyMultiply(token, change, originals, current) {
         let { key, value } = change;
         key = key.slice(4)
+        value = ATL.switchType(key, value)
+
         //const current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
         if ((typeof (current) !== "number") || (typeof (value) !== "number")) return null;
         const update = current * value;
@@ -576,6 +704,7 @@ class ATL {
     static applyOverride(token, change, originals, current) {
         let { key, value, mode } = change;
         key = key.slice(4)
+        value = ATL.switchType(key, value)
         // current = typeof getProperty(originals, key) === "number" ? getProperty(originals, key) : getProperty(token.data, key) || null;
         if (mode === CONST.ACTIVE_EFFECT_MODES.UPGRADE) {
             if ((typeof (current) === "number") && (current >= Number(value))) return null;
@@ -587,50 +716,9 @@ class ATL {
         return value;
     }
 }
-class ATLUpdate {
 
-    static runUpdates() {
-        switch (game.settings.get("ATL", "conversion")) {
-            case "0": { }
-            case "0.2.0": {
-                ATLUpdate.lightAlphaUpdate()
-            }
-            case "0.2.15": {
-                console.log("ATL: no conversion needed")
-            }
-        }
-    }
-    static lightAlphaUpdate(){
-        let presets = duplicate(game.settings.get("ATL", "presets"))
-        for (let preset of presets) {
-            if (!!preset.colorIntensity) {
-                preset.lightAlpha = preset.colorIntensity
-                delete preset.colorIntensity
-            }
-        }
-        new Dialog({
-            title: "ATL Preset Update",
-            content: `Do you wish to mass auto-update your ATL presets, one time choice.<br>
-            Changes: internal change of "colorIntensity" to "lightAlpha"`,
-            buttons: {
-                one: {
-                    label: "Yes",
-                    callback: async () => {
-                        await game.settings.set("ATL", "presets", presets)
-                        await game.settings.set("ATL", "conversion", "0.2.15")
-                    }
-                },
-                two: {
-                    label: "No, I'll update myself",
-                    callback: async () => {
-                        await game.settings.set("ATL", "conversion", "0.2.15")
+window.ATLUpdate = ATLUpdate
 
-                    }
-                }
-            }
-        }).render(true)
-    }
-}
 Hooks.on('init', ATL.init);
 Hooks.on('ready', ATL.ready)
 Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
