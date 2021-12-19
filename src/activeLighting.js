@@ -1,18 +1,21 @@
+import { ATLUpdate } from "./updateManager.js";
 class ATL {
 
     static init() {
         let defaultPresets = [
             {
                 name: "torch",
-                dim: 40,
-                bright: 20,
-                color: "#a2642a",
-                animation: {
-                    'type': 'torch',
-                    'speed': 1,
-                    'intensity': 1
+                light: {
+                    dim: 40,
+                    bright: 20,
+                    color: "#a2642a",
+                    animation: {
+                        'type': 'torch',
+                        'speed': 1,
+                        'intensity': 1
+                    },
+                    alpha: 0.7,
                 },
-                alpha: 0.4,
                 id: "ATLPresetTorch"
             },
             {
@@ -170,7 +173,7 @@ class ATL {
                 break;
             default: name = ""
 
-        }        
+        }
         if (height === undefined) height = "";
         if (width === undefined) width = "";
         if (scale === undefined) scale = "";
@@ -194,7 +197,7 @@ class ATL {
         let colorationTypes = ``
         for (let [k, v] of Object.entries(AdaptiveLightingShader.COLORATION_TECHNIQUES)) {
             let name = game.i18n.localize(v.label)
-            colorationTypes += `<option.value="${v.id}" ${coloration === v.id ? "selected" : ""}>${name}</option>`;
+            colorationTypes += `<option value="${v.id}" ${coloration === v.id ? "selected" : ""}>${name}</option>`;
         }
 
         let lightTypes = `<option selected value="none"> None</option>`
@@ -395,8 +398,8 @@ class ATL {
                         let object = {
                             name: name,
                             height: height,
-                            width : width,
-                            scale : scale,
+                            width: width,
+                            scale: scale,
                             light: {
                                 dim: dim,
                                 bright: bright,
@@ -526,6 +529,7 @@ class ATL {
         }
     }
     static async applyEffects(entity, effects) {
+        if(entity.documentName !== "Actor") return;
         let link = getProperty(entity, "data.token.actorLink")
         if (link === undefined) link = true
         let tokenArray = []
@@ -713,7 +717,9 @@ class ATL {
     }
 }
 
+window.ATLUpdate = ATLUpdate
+
 Hooks.on('init', ATL.init);
 Hooks.on('ready', ATL.ready)
 Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
-//Hooks.on("ready", ATLUpdate.runUpdates)
+Hooks.on("ready", ATLUpdate.runUpdates)
