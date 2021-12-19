@@ -1,7 +1,7 @@
 {
 	"name": "ATL",
-	"title": "Active Token Lighting",
-	"description": "Active Token Lighting",
+	"title": "Active Token Effects",
+	"description": "Active Token Effects",
 	"author": "Kandashi",
 	"version": "0.2.14",
 	"minimumCoreVersion": "0.8.3",
@@ -13,8 +13,8 @@
 	],
 	"packs": [
 		{
-			"name": "Token Lighting Premade",
-			"label": "Token Lighting premade",
+			"name": "Token Effects Premade",
+			"label": "Token Effects premade",
 			"path": "packs/premade",
 			"system" : "dnd5e",
 			"entity": "Item",
