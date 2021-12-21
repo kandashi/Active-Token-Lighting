@@ -62,10 +62,11 @@ export class ATLUpdate {
                 }
             }
             await effect.update({ "changes": updates })
+            if (updates.length > 1) {
+                await actor.setFlag("ATL", "conversion", 3.0)
+            }
         }
-        if (updates.length > 1) {
-            await actor.setFlag("ATL", "conversion", 3.0)
-        }
+
         console.warn(`ATL v9 update: Actor ${actor.name} updated`)
     }
 
