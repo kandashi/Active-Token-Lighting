@@ -615,7 +615,7 @@ class ATL {
                     overrides[updateKey] = resultTmp ? resultTmp : result;
                     let ot = typeof getProperty(originals, updateKey)
                     if (ot === "null" || ot === "undefined") {
-                        originals[updateKey] = entity.data.token[updateKey];
+                        originals[updateKey] = getProperty(entity.data.token, updateKey);
                     }
                 }
             }
@@ -633,7 +633,7 @@ class ATL {
         //update actor token
         let updatedToken = Object.assign(entity.data.token, overrides)
         if (link) await entity.setFlag("ATL", "originals", originals)
-        else entity.token.setFlag("ATL", "originals", originals)
+        else await entity.token.setFlag("ATL", "originals", originals)
         await entity.update({ token: updatedToken })
     }
 
