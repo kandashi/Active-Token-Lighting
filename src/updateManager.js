@@ -140,12 +140,12 @@ export class ATLUpdate {
         for (let preset of presets) {
             let newPreset = {
                 light: {
-                    dim: preset.dimLight || preset.light.dim,
-                    bright: preset.brightLight || preset.light.bright,
-                    animation: preset.lightAnimation || preset.light.animation,
-                    color: preset.lightColor || preset.light.color,
-                    alpha: preset.lightAlpha || preset.light.alpha,
-                    angle: preset.lightAngle || preset.light.angle,
+                    dim: preset.dimLight || preset.light?.dim,
+                    bright: preset.brightLight || preset.light?.bright,
+                    animation: preset.lightAnimation || preset.light?.animation,
+                    color: preset.lightColor || preset.light?.color,
+                    alpha: preset.lightAlpha || preset.light?.alpha,
+                    angle: preset.lightAngle || preset.light?.angle,
                     coloration: 0,
                 },
                 brightSight: preset.brightSight,
