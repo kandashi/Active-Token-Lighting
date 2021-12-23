@@ -583,7 +583,7 @@ class ATL {
                 if (change.key === "ATL.alpha") result = result * result
                 if (result !== null) {
                     let resultTmp;
-                    if (updateKey === "lightAnimation" && typeof result === "string") {
+                    if (updateKey === "light.animation" && typeof result === "string") {
                         try {
                             resultTmp = JSON.parse(result);
                         } catch (e) {
