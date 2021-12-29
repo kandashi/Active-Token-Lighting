@@ -4,8 +4,8 @@
 	"description": "Active Token Effects",
 	"author": "Kandashi",
 	"version": "0.2.14",
-	"minimumCoreVersion": "0.8.3",
-	"compatibleCoreVersion": "0.8.5",
+	"minimumCoreVersion": "9",
+	"compatibleCoreVersion": "9",
 
 	"esmodules": [
 		"src/activeLighting.js",

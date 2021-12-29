@@ -55,14 +55,17 @@ export class ATLUpdate {
         }
         let effects = actor.data.effects
         for (let effect of effects) {
-            let updates = []
+            let updates = [];
+            let changeFound = false;
             for (let change of effect.data.changes) {
                 if (change.key.includes("ATL")) {
+                    changeFound = true;
                     updates.push(this.v9UpdateEffect(duplicate(change)))
-                }
+                } 
+                else updates.push(change);
             }
-            await effect.update({ "changes": updates })
-            if (updates.length > 1) {
+            if (changeFound) {
+                await effect.update({ "changes": updates })
                 await actor.setFlag("ATL", "conversion", 3.0)
             }
         }
