@@ -578,7 +578,7 @@ class ATL {
                 }
             }
             else {
-                let preValue = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey)) ?? null;
+                let preValue = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey)) ? getProperty(originals, updateKey) : getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (change.key === "ATL.alpha") result = result * result
                 if (result !== null) {
