@@ -655,7 +655,7 @@ class ATL {
     }
 
     static switchType(key, value) {
-        let numeric = ["light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
+        let numeric = ["brightSight", "dimSight", "light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
         let Boolean = ["mirrorX", "mirrorY"]
         if (numeric.includes(key)) return parseFloat(value)
         else if (Boolean.includes(key)) {
