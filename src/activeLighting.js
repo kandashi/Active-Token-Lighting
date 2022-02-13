@@ -578,7 +578,22 @@ class ATL {
                 }
             }
             else {
-                let preValue = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey)) ? getProperty(originals, updateKey) : getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
+                let preValueOriginal = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey));
+                let preValue = null;
+                // Manage the false positive given from the 0 number value is detected like a 'false' from standard ecmascript
+                // and set the 'null' value instead the '0' value
+                if(typeof preValueOriginal === 'number' || !isNaN(preValueOriginal)) {
+                    preValue = getProperty(originals, updateKey) != null && getProperty(originals, updateKey) != undefined
+                        ? getProperty(originals, updateKey) 
+                        : getProperty(entity, `data.token.${updateKey}`);
+                    if(preValue != null && preValue != undefined && isNaN(preValue)){
+                        preValue = Number(preValue);
+                    }
+                } else {
+                    preValue = preValueOriginal 
+                        ? getProperty(originals, updateKey) 
+                        : getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
+                }
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (change.key === "ATL.alpha") result = result * result
                 if (result !== null) {
