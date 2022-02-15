@@ -61,7 +61,7 @@ export class ATLUpdate {
                 if (change.key.includes("ATL")) {
                     changeFound = true;
                     updates.push(this.v9UpdateEffect(duplicate(change)))
-                } 
+                }
                 else updates.push(change);
             }
             if (changeFound) {
@@ -79,7 +79,8 @@ export class ATLUpdate {
             case "ATL.brightSight":
             case "ATL.dimSight":
             case "ATL.height":
-            case "ATl.img":
+            case "ATl.img": // this is a typo but we leave here for retrocompatibility
+            case "ATL.img":
             case "ATL.mirrorX":
             case "ATL.mirrorY":
             case "ATL.rotation":
