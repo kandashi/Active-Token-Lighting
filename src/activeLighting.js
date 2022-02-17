@@ -638,11 +638,30 @@ class ATL {
 
         if (changes.length < 1) overrides = originals
 
-
+        let currentTokens = canvas.tokens.placeables.filter((t) => t.data.actorId == entity.id);
         // Expand the set of final overrides
         for (let eachToken of tokenArray) {
-            let updates = duplicate(originals)
-            Object.assign(updates, overrides)
+            // Strange bug fix when update the active effects the value of sight and vision
+            // are recovered from the prototype token not the actual token that reset the token
+            // with the original value from the prototype token
+            let tokenOriginals = duplicate(originals);
+            if(currentTokens.filter((t) => t.id == eachToken.id).length > 0){
+                tokenOriginals.light = eachToken.data.light;
+                tokenOriginals.dimSight = eachToken.data.dimSight;
+                tokenOriginals.brightSight = eachToken.data.brightSight;
+                tokenOriginals.sightAngle = eachToken.data.sightAngle;
+                tokenOriginals.name = eachToken.data.name;
+                tokenOriginals.height = eachToken.data.height;
+                tokenOriginals.width = eachToken.data.width;
+                tokenOriginals.scale = eachToken.data.scale;
+                //tokenOriginals.id = eachToken.data.id;
+            }
+            let updates = duplicate(tokenOriginals)
+            if (changes.length < 1) {
+                Object.assign(updates, tokenOriginals);
+            } else {
+                Object.assign(updates, overrides);
+            }
             await eachToken.document.update(updates)
         }
         //update actor token
@@ -670,7 +689,7 @@ class ATL {
     }
 
     static switchType(key, value) {
-        let numeric = ["light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
+        let numeric = ["brightSight", "dimSight", "light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
         let Boolean = ["mirrorX", "mirrorY"]
         if (numeric.includes(key)) return parseFloat(value)
         else if (Boolean.includes(key)) {
