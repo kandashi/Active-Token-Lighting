@@ -537,107 +537,124 @@ class ATL {
         else tokenArray = entity.getActiveTokens()
         if (tokenArray === []) return;
         let overrides = {};
-        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
+        const originals = link 
+            ? (await entity.getFlag("ATL", "originals") || {}) 
+            : (await entity.token.getFlag("ATL", "originals") || {});
 
-        for(let e of effects){
-            let changes = [];
-            if (e.data.disabled) {
-                changes = [];
-            } else {
-                changes = e.data.changes.map(c => {
-                    c = duplicate(c);
-                    c.effect = e;
-                    c.priority = c.priority ?? (c.mode * 10);
-                    return c;
-                });
-            }
-            changes.sort((a, b) => a.priority - b.priority);
-
-            // Apply all changes
-            for (let change of changes) {
-                if (!change.key.includes("ATL")) continue;
-                let updateKey = change.key.slice(4)
-                if (updateKey === "preset") {
-                    let presetArray = game.settings.get("ATL", "presets")
-                    let preset = presetArray.find(i => i.name === change.value)
-                    overrides = duplicate(preset);
-                    const checkString = (element) => typeof element === "string"
-                    for (const [key, value] of Object.entries(overrides)) {
-                        if (value === "") delete overrides[key]
-                    }
-                    if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
-                        ui.notifications.error("ATL: preset string error")
-                    }
-                    delete overrides.id
-                    delete overrides.name
-                    overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
-                    overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
-
-                    for (const [key, value] of Object.entries(overrides)) {
-                        let ot = typeof getProperty(originals, key)
-                        if (ot === "null" || ot === "undefined") originals[key] = entity.data.token[key]
-                    }
+        for(let currentToken of tokenArray){
+            for(let e of effects){
+                let changes = [];
+                if (e.data.disabled) {
+                    changes = [];
+                } else {
+                    changes = e.data.changes.map(c => {
+                        c = duplicate(c);
+                        c.effect = e;
+                        c.priority = c.priority ?? (c.mode * 10);
+                        return c;
+                    });
                 }
-                else {
-                    let preValueOriginal = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey));
-                    let preValue = null;
-                    // Manage the false positive given from the 0 number value is detected like a 'false' from standard ecmascript
-                    // and set the 'null' value instead the '0' value
-                    if(typeof preValueOriginal === 'number' || !isNaN(preValueOriginal)) {
-                        preValue = getProperty(originals, updateKey) != null && getProperty(originals, updateKey) != undefined
-                            ? getProperty(originals, updateKey) 
-                            : getProperty(entity, `data.token.${updateKey}`);
-                        if(preValue != null && preValue != undefined && isNaN(preValue)){
-                            preValue = Number(preValue);
+                changes.sort((a, b) => a.priority - b.priority);
+
+                // Apply all changes
+                for (let change of changes) {
+                    if (!change.key.includes("ATL")) continue;
+                    let updateKey = change.key.slice(4)
+                    if (updateKey === "preset") {
+                        let presetArray = game.settings.get("ATL", "presets")
+                        let preset = presetArray.find(i => i.name === change.value)
+                        overrides = duplicate(preset);
+                        const checkString = (element) => typeof element === "string"
+                        for (const [key, value] of Object.entries(overrides)) {
+                            if (value === "") delete overrides[key]
                         }
-                    } else {
-                        preValue = preValueOriginal 
-                            ? getProperty(originals, updateKey) 
-                            : getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
-                    }
-                    let result = ATL.apply(entity, change, originals, preValue);
-                    if (change.key === "ATL.alpha") result = result * result
-                    if (result !== null) {
-                        let resultTmp;
-                        if (updateKey === "light.animation" && typeof result === "string") {
-                            try {
-                                resultTmp = JSON.parse(result);
-                            } catch (err) {
-                                // MANAGE STRANGE ERROR FROM USERS
-                                var fixedJSON = result
+                        if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
+                            ui.notifications.error("ATL: preset string error")
+                        }
+                        delete overrides.id
+                        delete overrides.name
+                        overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
+                        overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
 
-                                    // Replace ":" with "@colon@" if it's between double-quotes
-                                    .replace(/:\s*"([^"]*)"/g, function (match, p1) {
-                                        return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                                    })
-
-                                    // Replace ":" with "@colon@" if it's between single-quotes
-                                    .replace(/:\s*'([^']*)'/g, function (match, p1) {
-                                        return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                                    })
-
-                                    // Add double-quotes around any tokens before the remaining ":"
-                                    .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
-
-                                    // Add double-quotes around any tokens after the remaining ":"
-                                    .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
-
-                                    // Turn "@colon@" back into ":"
-                                    .replace(/@colon@/g, ':');
-
-                                resultTmp = JSON.parse(fixedJSON);
+                        for (const [key, value] of Object.entries(overrides)) {
+                            let ot = typeof getProperty(originals, key)
+                            if (ot === "null" || ot === "undefined"){
+                                //originals[key] = entity.data.token[key];
+                                originals[key] = currentToken.data[key];
                             }
                         }
-                        overrides[updateKey] = resultTmp ? resultTmp : result;
-                        let ot = typeof getProperty(originals, updateKey)
-                        if (ot === "null" || ot === "undefined") {
-                            originals[updateKey] = getProperty(entity.data.token, updateKey);
+                    }
+                    else {
+                        let preValueOriginal = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey));
+                        let preValue = null;
+                        // Manage the false positive given from the 0 number value is detected like a 'false' from standard ecmascript
+                        // and set the 'null' value instead the '0' value
+                        if(typeof preValueOriginal === 'number' || !isNaN(preValueOriginal)) {
+                            preValue = getProperty(originals, updateKey) != null && getProperty(originals, updateKey) != undefined
+                                ? getProperty(originals, updateKey) 
+                                //: getProperty(entity, `data.token.${updateKey}`);
+                                : getProperty(currentToken, `data.${updateKey}`);
+                            if(preValue != null && preValue != undefined && isNaN(preValue)){
+                                preValue = Number(preValue);
+                            }
+                        } else {
+                            preValue = preValueOriginal 
+                                ? getProperty(originals, updateKey) 
+                                //: getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
+                                : getProperty(currentToken, `data.${updateKey}`)  ? getProperty(currentToken, `data.${updateKey}`) : null;
+                        }
+                        // let result = ATL.apply(entity, change, originals, preValue);
+                        let result = ATL.apply(currentToken, change, originals, preValue);
+                        if (change.key === "ATL.alpha") result = result * result
+                        if (result !== null) {
+                            let resultTmp;
+                            if (updateKey === "light.animation" && typeof result === "string") {
+                                try {
+                                    resultTmp = JSON.parse(result);
+                                } catch (err) {
+                                    // MANAGE STRANGE ERROR FROM USERS
+                                    var fixedJSON = result
+
+                                        // Replace ":" with "@colon@" if it's between double-quotes
+                                        .replace(/:\s*"([^"]*)"/g, function (match, p1) {
+                                            return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                        })
+
+                                        // Replace ":" with "@colon@" if it's between single-quotes
+                                        .replace(/:\s*'([^']*)'/g, function (match, p1) {
+                                            return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                        })
+
+                                        // Add double-quotes around any tokens before the remaining ":"
+                                        .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+
+                                        // Add double-quotes around any tokens after the remaining ":"
+                                        .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+
+                                        // Turn "@colon@" back into ":"
+                                        .replace(/@colon@/g, ':');
+
+                                    resultTmp = JSON.parse(fixedJSON);
+                                }
+                            }
+                            overrides[updateKey] = resultTmp ? resultTmp : result;
+                            let ot = typeof getProperty(originals, updateKey)
+                            if (ot === "null" || ot === "undefined") {
+                                //originals[updateKey] = getProperty(entity.data.token, updateKey);
+                                originals[updateKey] = getProperty(`${currentToken}.data`, updateKey);
+                            }
                         }
                     }
                 }
+                ATL.applyEffect(entity, e, currentToken, overrides, originals, changes, effects);
+                if (e.data.disabled) {
+                    if(await currentToken.document.hasFlag("ATL", "originals"+e.id)){
+                        await currentToken.document.unsetFlag("ATL", "originals"+e.id);
+                    }
+                }
             }
-            ATL.applyEffect(entity, e, tokenArray, overrides, originals, changes);
         }
+        // REMOVED THE MANAGEMENT OF THE PROTOTYPE TOKEN
 
         // Organize non-disabled effects by their application priority
         // const changes = effects.reduce((changes, e) => {
@@ -654,65 +671,90 @@ class ATL {
         // if (changes.length < 1) overrides = originals
 
         // //update actor token
-        // let updatedToken = Object.assign(entity.data.token, overrides)
+        // Object.assign do not merge light.* with the object light: {} we use mergeObject function
+        //// let updatedToken = Object.assign(entity.data.token, overrides)
+        // let updatedToken = Object.mergeObject(entity.data.token, overrides)
         // if (link) await entity.setFlag("ATL", "originals", originals)
         // else await entity.token.setFlag("ATL", "originals", originals)
         // await entity.update({ token: updatedToken })
     }
 
-    static async applyEffect(entity, effect, tokenArray, overrides, originals, changes) {
-
+    static async applyEffect(entity, effect, eachToken, overrides, originals, changes, effects) {
         let currentTokens = canvas.tokens.placeables.filter((t) => t.data.actorId == entity.id);
         // Expand the set of final overrides
-        for (let eachToken of tokenArray) {
-            // Strange bug fix when update the active effects the value of sight and vision
-            // are recovered from the prototype token not the actual token that reset the token
-            // with the original value from the prototype token
-            let tokenOriginals = eachToken.document.getFlag("ATL", "originals"+effect.id) || duplicate(originals);
-            if(!eachToken.document.getFlag("ATL", "originals"+effect.id) 
-                && currentTokens.filter((t) => t.id == eachToken.id).length > 0){
+        // Strange bug fix when update the active effects the value of sight and vision
+        // are recovered from the prototype token not the actual token that reset the token
+        // with the original value from the prototype token
+        let tokenOriginals = eachToken.document.getFlag("ATL", "originals"+effect.id) || duplicate(originals);
+        if(!eachToken.document.getFlag("ATL", "originals"+effect.id) 
+            && currentTokens.filter((t) => t.id == eachToken.id).length > 0){
+            if(eachToken.data.light != null && eachToken.data.light != undefined) {
                 tokenOriginals.light = eachToken.data.light;
+            }
+            if(eachToken.data.dimSight != null && eachToken.data.dimSight != undefined) {
                 tokenOriginals.dimSight = eachToken.data.dimSight;
+            }
+            if(eachToken.data.brightSight != null && eachToken.data.brightSight != undefined) {
                 tokenOriginals.brightSight = eachToken.data.brightSight;
+            }
+            if(eachToken.data.sightAngle != null && eachToken.data.sightAngle != undefined) {
                 tokenOriginals.sightAngle = eachToken.data.sightAngle;
+            }
+            if(eachToken.data.name != null && eachToken.data.name != undefined) {
                 tokenOriginals.name = eachToken.data.name;
+            }
+            if(eachToken.data.height != null && eachToken.data.height != undefined) {
                 tokenOriginals.height = eachToken.data.height;
+            }
+            if(eachToken.data.width != null && eachToken.data.width != undefined) {
                 tokenOriginals.width = eachToken.data.width;
+            }
+            if(eachToken.data.scale != null && eachToken.data.scale != undefined) {
                 tokenOriginals.scale = eachToken.data.scale;
-                //tokenOriginals.id = eachToken.data.id;
             }
-            let updates = duplicate(tokenOriginals)
-            if (changes.length < 1) {
-                // Object.assign do not merge light.* with the object light: {} we use mergeObject function
-                //Object.assign(updates, tokenOriginals);
-                mergeObject(updates, tokenOriginals);
-            } else {
-                // Object.assign do not merge light.* with the object light: {} we use mergeObject function
-                //Object.assign(updates, overrides);
-                mergeObject(updates, overrides);
-            }
-            if(overrides
-                && Object.keys(overrides).length === 0
-                && Object.getPrototypeOf(overrides) === Object.prototype) {
-                await eachToken.document.unsetFlag("ATL", "originals"+effect.id);
-            } else {
-                await eachToken.document.setFlag("ATL", "originals"+effect.id, tokenOriginals);
-            }
-            await eachToken.document.update(updates);
-
-            // brightSight: 0
-            // dimSight: 60
-            // height: 1
-            // light: {alpha: 0.1, angle: 0, bright: 0, color: '#ffffff', coloration: 0, …}
-            // light.alpha: 0.075
-            // light.bright: 20
-            // light.color: "#ffffff"
-            // light.dim: 40
-            // name: "CH0"
-            // scale: 1
-            // sightAngle: 360
-            // width: 1
+            //tokenOriginals.id = eachToken.data.id;
         }
+        let updates = duplicate(tokenOriginals)
+        if (changes.length < 1) {
+            // Object.assign do not merge light.* with the object light: {} we use mergeObject function
+            //Object.assign(updates, tokenOriginals);
+            mergeObject(updates, tokenOriginals);
+        } else {
+            // Object.assign do not merge light.* with the object light: {} we use mergeObject function
+            //Object.assign(updates, overrides);
+            mergeObject(updates, overrides);
+        }
+        if(overrides
+            && Object.keys(overrides).length === 0
+            && Object.getPrototypeOf(overrides) === Object.prototype) {
+            await eachToken.document.unsetFlag("ATL", "originals"+effect.id);
+        } else {
+            await eachToken.document.setFlag("ATL", "originals"+effect.id, tokenOriginals);
+        }
+        await eachToken.document.update(updates);
+        // after the update we set for each other atl effect this updates like originals
+        // this should be syncrhonized multiple ATL effect on different token without conflict
+        // TODO find with kandashi a better solution :(
+        for(let e of effects){
+            if(e.id != effect.id && !e.data.disabled){
+                let originalsForThisEffect = eachToken.document.getFlag("ATL", "originals"+e.id);
+                let updatesForThisEffect = mergeObject(updates,originalsForThisEffect);
+                await eachToken.document.setFlag("ATL", "originals"+e.id, updatesForThisEffect);
+            }
+        }
+
+        // brightSight: 0
+        // dimSight: 60
+        // height: 1
+        // light: {alpha: 0.1, angle: 0, bright: 0, color: '#ffffff', coloration: 0, …}
+        // light.alpha: 0.075
+        // light.bright: 20
+        // light.color: "#ffffff"
+        // light.dim: 40
+        // name: "CH0"
+        // scale: 1
+        // sightAngle: 360
+        // width: 1
     }
 
 
