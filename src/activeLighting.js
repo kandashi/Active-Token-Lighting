@@ -86,7 +86,7 @@ class ATL {
             let totalEffects = effect.parent.effects.contents.filter(i => !i.data.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (effect.data.disabled) ATLeffects.push(effect)
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            if (ATLeffects.length > 0) ATL.applyEffectsForEachToken(effect.parent, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (effect, options) => {
@@ -94,14 +94,14 @@ class ATL {
             if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
             const totalEffects = effect.parent.effects.contents.filter(i => !i.data.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            if (ATLeffects.length > 0) ATL.applyEffectsForEachToken(effect.parent, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (effect, options) => {
             if (!gm) return;
             if (!effect.data.changes?.find(effect => effect.key.includes("ATL"))) return;
             let ATLeffects = effect.parent.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-            ATL.applyEffects(effect.parent, ATLeffects)
+            ATL.applyEffectsForEachToken(effect.parent, ATLeffects)
 
         })
     }
@@ -537,6 +537,119 @@ class ATL {
         else tokenArray = entity.getActiveTokens()
         if (tokenArray === []) return;
         let overrides = {};
+        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
+
+
+        // Organize non-disabled effects by their application priority
+        const changes = effects.reduce((changes, e) => {
+            if (e.data.disabled) return changes;
+            return changes.concat(e.data.changes.map(c => {
+                c = duplicate(c);
+                c.effect = e;
+                c.priority = c.priority ?? (c.mode * 10);
+                return c;
+            }));
+        }, []);
+        changes.sort((a, b) => a.priority - b.priority);
+
+        // Apply all changes
+        for (let change of changes) {
+            if (!change.key.includes("ATL")) continue;
+            let updateKey = change.key.slice(4)
+            if (updateKey === "preset") {
+                let presetArray = game.settings.get("ATL", "presets")
+                let preset = presetArray.find(i => i.name === change.value)
+                overrides = duplicate(preset);
+                const checkString = (element) => typeof element === "string"
+                for (const [key, value] of Object.entries(overrides)) {
+                    if (value === "") delete overrides[key]
+                }
+                if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
+                    ui.notifications.error("ATL: preset string error")
+                }
+                delete overrides.id
+                delete overrides.name
+                overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
+                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
+
+                for (const [key, value] of Object.entries(overrides)) {
+                    let ot = typeof getProperty(originals, key)
+                    if (ot === "null" || ot === "undefined") originals[key] = entity.data.token[key]
+                }
+            }
+            else {
+                let preValue = (overrides[updateKey] ? overrides[updateKey] : getProperty(originals, updateKey)) ? getProperty(originals, updateKey) : getProperty(entity, `data.token.${updateKey}`)  ? getProperty(entity, `data.token.${updateKey}`) : null;
+                let result = ATL.apply(entity, change, originals, preValue);
+                if (change.key === "ATL.alpha") result = result * result
+                if (result !== null) {
+                    let resultTmp;
+                    if (updateKey === "light.animation" && typeof result === "string") {
+                        try {
+                            resultTmp = JSON.parse(result);
+                        } catch (e) {
+                            // MANAGE STRANGE ERROR FROM USERS
+                            var fixedJSON = result
+
+                                // Replace ":" with "@colon@" if it's between double-quotes
+                                .replace(/:\s*"([^"]*)"/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
+
+                                // Replace ":" with "@colon@" if it's between single-quotes
+                                .replace(/:\s*'([^']*)'/g, function (match, p1) {
+                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                })
+
+                                // Add double-quotes around any tokens before the remaining ":"
+                                .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+
+                                // Add double-quotes around any tokens after the remaining ":"
+                                .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+
+                                // Turn "@colon@" back into ":"
+                                .replace(/@colon@/g, ':');
+
+                            resultTmp = JSON.parse(fixedJSON);
+                        }
+                    }
+                    overrides[updateKey] = resultTmp ? resultTmp : result;
+                    let ot = typeof getProperty(originals, updateKey)
+                    if (ot === "null" || ot === "undefined") {
+                        originals[updateKey] = getProperty(entity.data.token, updateKey);
+                    }
+                }
+            }
+        }
+
+        if (changes.length < 1) overrides = originals
+
+
+        // Expand the set of final overrides
+        for (let eachToken of tokenArray) {
+            let updates = duplicate(originals)
+            // Object.assign do not merge light.* with the object light: {} we use mergeObject function
+            //Object.assign(updates, overrides)
+            mergeObject(updates, overrides);
+            await eachToken.document.update(updates)
+        }
+        //update actor token
+        // Object.assign do not merge light.* with the object light: {} we use mergeObject function
+        //let updatedToken = Object.assign(entity.data.token, overrides)
+        let updatedToken = mergeObject(entity.data.token, overrides)
+        if (link) await entity.setFlag("ATL", "originals", originals)
+        else await entity.token.setFlag("ATL", "originals", originals)
+        await entity.update({ token: updatedToken })
+    }
+
+    static async applyEffectsForEachToken(entity, effects) {
+        if(entity.documentName !== "Actor") return;
+        let link = getProperty(entity, "data.token.actorLink")
+        if (link === undefined) link = true
+        let tokenArray = []
+        if (!link) tokenArray = [entity.token?.object]
+        else tokenArray = entity.getActiveTokens()
+        if (tokenArray === []) return;
+        let overrides = {};
         const originals = link 
             ? (await entity.getFlag("ATL", "originals") || {}) 
             : (await entity.token.getFlag("ATL", "originals") || {});
@@ -648,35 +761,12 @@ class ATL {
                 }
                 ATL.applyEffect(entity, e, currentToken, overrides, originals, changes, effects);
                 if (e.data.disabled) {
-                    if(await currentToken.document.hasFlag("ATL", "originals"+e.id)){
+                    if(currentToken.document.getFlag("ATL", "originals"+e.id)){
                         await currentToken.document.unsetFlag("ATL", "originals"+e.id);
                     }
                 }
             }
         }
-        // REMOVED THE MANAGEMENT OF THE PROTOTYPE TOKEN
-
-        // Organize non-disabled effects by their application priority
-        // const changes = effects.reduce((changes, e) => {
-        //     if (e.data.disabled) return changes;
-        //     return changes.concat(e.data.changes.map(c => {
-        //         c = duplicate(c);
-        //         c.effect = e;
-        //         c.priority = c.priority ?? (c.mode * 10);
-        //         return c;
-        //     }));
-        // }, []);
-        // changes.sort((a, b) => a.priority - b.priority);
-
-        // if (changes.length < 1) overrides = originals
-
-        // //update actor token
-        // Object.assign do not merge light.* with the object light: {} we use mergeObject function
-        //// let updatedToken = Object.assign(entity.data.token, overrides)
-        // let updatedToken = Object.mergeObject(entity.data.token, overrides)
-        // if (link) await entity.setFlag("ATL", "originals", originals)
-        // else await entity.token.setFlag("ATL", "originals", originals)
-        // await entity.update({ token: updatedToken })
     }
 
     static async applyEffect(entity, effect, eachToken, overrides, originals, changes, effects) {
@@ -734,7 +824,7 @@ class ATL {
         await eachToken.document.update(updates);
         // after the update we set for each other atl effect this updates like originals
         // this should be syncrhonized multiple ATL effect on different token without conflict
-        // TODO find with kandashi a better solution :(
+        // TODO find with kandashi a better solution :( because this is not working
         for(let e of effects){
             if(e.id != effect.id && !e.data.disabled){
                 let originalsForThisEffect = eachToken.document.getFlag("ATL", "originals"+e.id);
@@ -742,19 +832,6 @@ class ATL {
                 await eachToken.document.setFlag("ATL", "originals"+e.id, updatesForThisEffect);
             }
         }
-
-        // brightSight: 0
-        // dimSight: 60
-        // height: 1
-        // light: {alpha: 0.1, angle: 0, bright: 0, color: '#ffffff', coloration: 0, …}
-        // light.alpha: 0.075
-        // light.bright: 20
-        // light.color: "#ffffff"
-        // light.dim: 40
-        // name: "CH0"
-        // scale: 1
-        // sightAngle: 360
-        // width: 1
     }
 
 
