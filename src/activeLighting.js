@@ -648,6 +648,13 @@ class ATL {
         let tokenArray = []
         if (!link) tokenArray = [entity.token?.object]
         else tokenArray = entity.getActiveTokens()
+
+        // Little trick forn when some token is selected
+        // instead get all active tokens
+        if(canvas.tokens.controlled?.length > 0){
+            tokenArray = canvas.tokens.controlled;
+        }
+
         if (tokenArray === []) return;
         let overrides = {};
         const originals = link 
