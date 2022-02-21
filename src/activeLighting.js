@@ -537,7 +537,7 @@ class ATL {
         else tokenArray = entity.getActiveTokens()
         if (tokenArray === []) return;
         let overrides = {};
-        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token.getFlag("ATL", "originals") || {});
+        const originals = link ? (await entity.getFlag("ATL", "originals") || {}) : (await entity.token?.getFlag("ATL", "originals") || {});
 
 
         // Organize non-disabled effects by their application priority
@@ -674,7 +674,7 @@ class ATL {
         let overrides = {};
         const originals = link 
             ? (await entity.getFlag("ATL", "originals") || {}) 
-            : (await entity.token.getFlag("ATL", "originals") || {});
+            : (await entity.token?.getFlag("ATL", "originals") || {});
 
         for(let currentToken of tokenArray){
             for(let e of effects){
@@ -776,7 +776,7 @@ class ATL {
                             let ot = typeof getProperty(originals, updateKey)
                             if (ot === "null" || ot === "undefined") {
                                 //originals[updateKey] = getProperty(entity.data.token, updateKey);
-                                originals[updateKey] = getProperty(`${currentToken}.data`, updateKey);
+                                originals[updateKey] = getProperty(currentToken,`data.${updateKey}`);
                             }
                         }
                     }
