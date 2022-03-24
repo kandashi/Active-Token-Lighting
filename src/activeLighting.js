@@ -404,7 +404,7 @@ class ATL {
                     label: "Add Preset",
                     icon: `<i class="fas fa-check"></i>`,
                     callback: async (html) => {
-                        let id = html.find("#name")[0].name || randomID()
+                        let id = html.find("#name")[0].value || randomID()
                         let name = html.find("#name")[0].value
                         let height = await ATL.checkString(html.find("#height")[0].value)
                         let width = await ATL.checkString(html.find("#width")[0].value)
@@ -647,6 +647,9 @@ class ATL {
                                 .replace(/@colon@/g, ':');
 
                             resultTmp = JSON.parse(fixedJSON);
+                            for (const [key, value] of Object.entries(resultTmp)) {
+                                resultTmp[key] = ATL.switchType(key, value)
+                            }
                         }
                     }
                     overrides[updateKey] = resultTmp ? resultTmp : result;
@@ -656,6 +659,7 @@ class ATL {
         if (changes.length < 1) overrides = originals
         let updates = duplicate(originals)
         mergeObject(updates, overrides)
+        if(entity.data.token.randomImg) delete updates.img
         let updateMap = tokenArray.map(t => mergeObject({_id: t.id}, updates))
         await canvas.scene.updateEmbeddedDocuments("Token", updateMap)
     }
@@ -678,7 +682,7 @@ class ATL {
     }
 
     static switchType(key, value) {
-        let numeric = ["brightSight", "dimSight", "light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
+        let numeric = ["brightSight", "dimSight", "light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation", "speed", "intensity"]
         let Boolean = ["mirrorX", "mirrorY", "light.gradual", "vision"]
         if (numeric.includes(key)) return parseFloat(value)
         else if (Boolean.includes(key)) {
