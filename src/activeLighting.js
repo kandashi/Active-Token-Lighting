@@ -116,9 +116,19 @@ class ATL {
             if (!gm) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
             for( let token of linkedTokens){
-                let ATLeffects = token.actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+                let ATLeffects = token.actor.data.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
             }
+        })
+
+        Hooks.on("updateItem", (item, update) => {
+            if (!gm || game.system.id !== "dnd5e" || !item.parent) return;
+            if("equipped" in update.data || "attunement" in update.data) {
+                let actor = item.parent
+                let ATLeffects = actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+                if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
+            }
+            
         })
 
         if (!gm) return;
@@ -565,7 +575,7 @@ class ATL {
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
-            if (e.data.disabled) return changes;
+            if (e.data.disabled || e.isSuppressed ) return changes;
             return changes.concat(e.data.changes.map(c => {
                 c = duplicate(c);
                 c.effect = e;
@@ -669,7 +679,7 @@ class ATL {
 
     static switchType(key, value) {
         let numeric = ["brightSight", "dimSight", "light.dim", "light.bright", "dim", "bright", "scale", "height", "width", "light.angle", "light.alpha", "rotation"]
-        let Boolean = ["mirrorX", "mirrorY"]
+        let Boolean = ["mirrorX", "mirrorY", "light.gradual", "vision"]
         if (numeric.includes(key)) return parseFloat(value)
         else if (Boolean.includes(key)) {
             if (value === "true") return true
