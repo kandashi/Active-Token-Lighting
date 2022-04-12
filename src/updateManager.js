@@ -206,5 +206,18 @@ export class ATLUpdate {
         return newData
     }
 
+    static async flagBuster(actor){
+        console.warn(`Updating ${actor.name}`)
+        let flag = actor.getFlag("ATL", "originals")
+        if(!flag) return ui.notifications.notify(`No Flag for ${actor.name}`)
+        let updates = mergeObject(actor.data.token, flag, {inplace: false})
+        await actor.update({token : updates})
+    }
+
+    static async massFlagUpdate(){
+        for(let actor of game.actors){
+            await this.flagBuster(actor)
+        }
+    }
 }
 
