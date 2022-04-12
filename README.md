@@ -3,7 +3,7 @@
 Active Token Effects works as active effects for token data. This means any token data can be controlled through an Active Effect: size, lighting, vision, image etc.
 
 You can use the syntax `ATL.X` as the attribute key for the active effect. Where `X` is the data path you wish to change.
-For example to change dimSight on a token use `ATL.dimSight` as the attribute key
+For example to change dimSight on a token use `ATL.sight.dim` as the attribute key
 
 There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and value of the name in lowercase `torch`, `lantern`, `candle` and `flashlight`. These will override custom values set in other flags.
 
@@ -27,3 +27,4 @@ Modes will act the same as standard active effects. Note that any effect with a 
   - ATL.GeneratePreset() will open a dialog to create a new preset
   - ATL.UpdatePresets() will open a dialog to edit,delete,add presets
 - Use the presets in the same way with `ATL.preset` with a value of the preset name.
+

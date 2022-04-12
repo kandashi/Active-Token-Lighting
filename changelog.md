@@ -6,3 +6,10 @@
 ### 0.2.16
 - fixed bug with presets and lightAlpha 
 - Fixed item compendium for lightAlpha update
+
+### 0.4.0
+Changed to base of Prototype Token data, makes failure of the module less invasive
+Fixed various integer/boolean/numeric issues
+Fixed "unavaliable" effect issues
+-key point is that you must run ATLUpdate.massFlagUpdate() as a script macro/command when you load in a new world (otherwise you'll have to manually update some prototype tokens)
+    This will update in-world actors/tokens but not compendium actors. You can use ATLUpdate.flagBuster(actor) to individually update actors
