@@ -115,28 +115,28 @@ class ATL {
         Hooks.on("canvasReady", () => {
             if (!gm) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
-            for( let token of linkedTokens){
+            for (let token of linkedTokens) {
                 let ATLeffects = token.actor.data.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
             }
         })
 
         Hooks.on("updateItem", (item, update) => {
-            if (!gm || game.system.id !== "dnd5e" || !item.parent) return;
-            if("equipped" in update.data || "attunement" in update.data) {
+            if (!gm || game.system.id !== "dnd5e" || !item.parent || !update.data) return;
+            if ("equipped" in update.data || "attunement" in update.data) {
                 let actor = item.parent
                 let ATLeffects = actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
             }
-            
+
         })
 
         if (!gm) return;
-            let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
-            for( let token of linkedTokens){
-                let ATLeffects = token.actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
-            }
+        let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
+        for (let token of linkedTokens) {
+            let ATLeffects = token.actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+        }
     }
 
     static AddPreset(name, object) {
@@ -205,8 +205,8 @@ class ATL {
             case false: name = name;
                 break;
             default: name = ""
-
         }
+        if (!id) id = randomID()
         if (height === undefined) height = "";
         if (width === undefined) width = "";
         if (scale === undefined) scale = "";
@@ -404,8 +404,8 @@ class ATL {
                     label: "Add Preset",
                     icon: `<i class="fas fa-check"></i>`,
                     callback: async (html) => {
-                        let id = html.find("#name")[0].value || randomID()
-                        let name = html.find("#name")[0].value
+                        let id = html.find("#name")[0].name || randomID()
+                        let name = html.find("#name")[0].name
                         let height = await ATL.checkString(html.find("#height")[0].value)
                         let width = await ATL.checkString(html.find("#width")[0].value)
                         let scale = await ATL.checkString(html.find("#scale")[0].value)
@@ -562,7 +562,7 @@ class ATL {
         }
     }
     static async applyEffects(entity, effects) {
-        if(entity.documentName !== "Actor") return;
+        if (entity.documentName !== "Actor") return;
         let link = getProperty(entity, "data.token.actorLink")
         if (link === undefined) link = true
         let tokenArray = []
@@ -575,7 +575,7 @@ class ATL {
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
-            if (e.data.disabled || e.isSuppressed ) return changes;
+            if (e.data.disabled || e.isSuppressed) return changes;
             return changes.concat(e.data.changes.map(c => {
                 c = duplicate(c);
                 c.effect = e;
@@ -592,7 +592,7 @@ class ATL {
             if (updateKey === "preset") {
                 let presetArray = game.settings.get("ATL", "presets")
                 let preset = presetArray.find(i => i.name === change.value)
-                if(preset === undefined) {
+                if (preset === undefined) {
                     console.error(`ATL: No preset ${change.value} found`)
                     return
                 }
@@ -659,8 +659,8 @@ class ATL {
         if (changes.length < 1) overrides = originals
         let updates = duplicate(originals)
         mergeObject(updates, overrides)
-        if(entity.data.token.randomImg) delete updates.img
-        let updateMap = tokenArray.map(t => mergeObject({_id: t.id}, updates))
+        if (entity.data.token.randomImg) delete updates.img
+        let updateMap = tokenArray.map(t => mergeObject({ _id: t.id }, updates))
         await canvas.scene.updateEmbeddedDocuments("Token", updateMap)
     }
 
