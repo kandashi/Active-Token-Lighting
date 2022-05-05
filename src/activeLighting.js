@@ -116,7 +116,7 @@ class ATL {
             if (!gm) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
             for (let token of linkedTokens) {
-                let ATLeffects = token.actor.data.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+                let ATLeffects = token.actor?.data.effects?.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
             }
         })
@@ -134,7 +134,7 @@ class ATL {
         if (!gm) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.data.link)
         for (let token of linkedTokens) {
-            let ATLeffects = token.actor.effects.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = token.actor?.effects?.filter(entity => !!entity.data.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
         }
     }
