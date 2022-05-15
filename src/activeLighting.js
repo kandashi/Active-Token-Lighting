@@ -405,7 +405,7 @@ class ATL {
                     icon: `<i class="fas fa-check"></i>`,
                     callback: async (html) => {
                         let id = html.find("#name")[0].name || randomID()
-                        let name = html.find("#name")[0].name
+                        let name = html.find("#name")[0].value
                         let height = await ATL.checkString(html.find("#height")[0].value)
                         let width = await ATL.checkString(html.find("#width")[0].value)
                         let scale = await ATL.checkString(html.find("#scale")[0].value)
