@@ -659,7 +659,7 @@ class ATL {
         if (changes.length < 1) overrides = originals
         let updates = duplicate(originals)
         mergeObject(updates, overrides)
-        if (entity.data.token.randomImg) delete updates.img
+        delete updates.img
         let updateMap = tokenArray.map(t => mergeObject({ _id: t.id }, updates))
         await canvas.scene.updateEmbeddedDocuments("Token", updateMap)
     }
