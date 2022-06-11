@@ -1,6 +1,10 @@
 
 import { ATLUpdate } from "./updateManager.js";
+
+
 class ATL {
+
+    static PROPERTIES = {light: {dim: true}}
 
     static init() {
         let defaultPresets = [
@@ -658,8 +662,7 @@ class ATL {
         }
         if (changes.length < 1) overrides = originals
         let updates = duplicate(originals)
-        mergeObject(updates, overrides)
-        delete updates.img
+        updates = filterObject(mergeObject(updates, overrides), {light: true, height: true, width: true, scale: true, dimSight: true, brightSight: true})
         let updateMap = tokenArray.map(t => mergeObject({ _id: t.id }, updates))
         await canvas.scene.updateEmbeddedDocuments("Token", updateMap)
     }
