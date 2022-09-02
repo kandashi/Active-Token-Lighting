@@ -21,38 +21,44 @@ class ATL {
             },
             {
                 name: "lantern",
-                dim: 60,
-                bright: 30,
-                color: "#a2642a",
-                animation: {
-                    'type': 'torch',
-                    'speed': 1,
-                    'intensity': 1
+                light: {
+                    dim: 60,
+                    bright: 30,
+                    color: "#a2642a",
+                    animation: {
+                        'type': 'torch',
+                        'speed': 1,
+                        'intensity': 1
+                    },
+                    alpha: 0.4
                 },
-                alpha: 0.4,
                 id: "ATLPresetLantern"
 
             },
             {
                 name: "candle",
-                dim: 10,
-                bright: 2,
-                color: "#a2642a",
-                animation: {
-                    'type': 'torch',
-                    'speed': 1,
-                    'intensity': 1
+                light: {
+                    dim: 10,
+                    bright: 2,
+                    color: "#a2642a",
+                    animation: {
+                        'type': 'torch',
+                        'speed': 1,
+                        'intensity': 1
+                    },
+                    alpha: 0.2
                 },
-                alpha: 0.2,
                 id: "ATLPresetCandle"
 
             },
             {
                 name: "flashlight",
-                dim: 60,
-                bright: 30,
-                color: "#8bfdf6",
-                alpha: 0.3,
+                light: {
+                    dim: 60,
+                    bright: 30,
+                    color: "#8bfdf6",
+                    alpha: 0.3
+                },
                 id: "ATLPresetFlashlight"
             }
         ]
