@@ -10,6 +10,9 @@ export class ATLUpdate {
                 ATLUpdate.v9Update()
             }
             case "0.3.0": {
+                ATLUpdate.v10Update();
+            }
+            case "0.5.0": {
                 console.log("ATL: no conversion needed")
             }
         }
@@ -218,6 +221,138 @@ export class ATLUpdate {
         for(let actor of game.actors){
             await this.flagBuster(actor)
         }
+    }
+
+    static async v10Update() {
+        console.log("ATL: v10 update process starting");
+
+        // update presets
+        console.log("ATL: v10 update presets");
+        const presets = duplicate(game.settings.get("ATL", "presets"));
+        presets.forEach(this.v10UpdatePreset);
+        game.settings.set("ATL", "presets", presets);
+        console.log("ATL: v10 update presets done");
+
+        // update actors w/ linked tokens
+        console.log("ATL: v10 update actors");
+        for (const actor of game.actors.filter(a => a.prototypeToken.actorLink)) {
+            // update originals flag
+            const originals = actor.getFlag("ATL", "originals");
+            if (!!originals) {
+                this.v10UpdatePreset(originals);
+                await actor.setFlag("ATL", "originals", originals);
+            }
+
+            // update effects
+            for (const effect of actor.effects) {
+                const newChanges = this.v10UpdateEffectChanges(effect);
+                if (newChanges) await effect.update({ changes: newChanges });
+            }
+        }
+        console.log("ATL: v10 update actors done");
+
+        // update scenes
+        console.log("ATL: v10 update scenes");
+        for (const scene of game.scenes) {
+            // update the unlinked tokens
+            for (const token of scene.tokens.filter(t => !t.document.actorLink)) {
+                // update originals flag
+                const originals = token.getFlag("ATL", "originals");
+                if (!!originals) {
+                    this.v10UpdatePreset(originals);
+                    await token.setFlag("ATL", "originals", originals);
+                }
+            }
+        }
+        console.log("ATL: v10 update scenes done");
+
+        // update items
+        console.log("ATL: v10 update items");
+        for (const item of game.items) {
+            // update effects
+            for (const effect of item.effects) {
+                const newChanges = this.v10UpdateEffectChanges(effect);
+                if (newChanges) await effect.update({ changes: newChanges });
+            }
+        }
+        console.log("ATL: v10 update items done");
+
+        // record v10 update finished
+        await game.settings.set("ATL", "conversion", "0.5.0");
+    }
+
+    static v10UpdatePreset(preset) {
+        // rename some keys
+        const renamedKeys = [
+            ["sightAngle", "sight.angle"],
+            ["vision", "sight.enabled"]
+        ];
+        for (const [oldKey, newKey] of renamedKeys) {
+            if (Object.hasOwn(preset, oldKey)) {
+                setProperty(preset, newKey, data[oldKey]);
+                delete data[oldKey];
+            }
+        }
+
+        // migrate old sight keys
+        if (Object.hasOwn(preset, "dimSight") || Object.hasOwn(preset, "brightSight")) {
+            // range is max previous keys
+            const dimSight = preset.dimSight ?? 0;
+            const brightSight = preset.brightSight ?? 0;
+            const range = Math.max(dimSight, brightSight);
+            setProperty(preset, "sight.range", range);
+            delete preset.dimSight;
+            delete preset.brightSight;
+
+            // compute brightness
+            const brightness = brightSight >= dimSight ? 1 : 0;
+            setProperty(preset, "sight.brightness", brightness);
+        }
+    }
+
+    static v10UpdateEffectChanges(effect) {
+        let changeFound = false;
+        const changes = duplicate(effect.changes);
+
+        // handle the renames
+        for (const change of changes) {
+            switch (change.key) {
+                case "ATL.sightAngle":
+                    changeFound = true;
+                    change.key = "ATL.sight.angle";
+                    break;
+                case "ATL.vision":
+                    changeFound = true;
+                    change.key = "ATL.sight.enabled";
+                    break;
+            }
+        }
+
+        // look for dimSight and brightSight to migrate to sight.range and sight.brightness
+        const dimSightChange = changes.find(change => change.key === "ATL.dimSight");
+        const brightSightChange = changes.find(change => change.key === "ATL.brightSight");
+        if (dimSightChange || brightSightChange) {
+            changeFound = true;
+
+            // calculate range and brightness
+            const dimSight = dimSightChange?.value ?? 0;
+            const brightSight = brightSightChange?.value ?? 0;
+            const range = Math.max(dimSight, brightSight);
+            const brightness = brightSight >= dimSight ? 1 : 0;
+
+            // remove the existing two changes
+            if (dimSightChange) changes.splice(changes.indexOf(dimSightChange), 1);
+            if (brightSightChange) changes.splice(changes.indexOf(brightSightChange), 1);
+
+            // create new changes
+            const mode = dimSightChange?.mode ?? brightSightChange?.mode ?? 0;
+            const priority = dimSightChange?.priority ?? brightSightChange?.priority ?? null;
+            changes.push({ key: "ATL.sight.range", value: range, mode, priority });
+            if (brightness !== 0)
+                changes.push({ key: "ATL.sight.brightness", value: brightness, mode, priority });
+        }
+        
+        if (changeFound) return changes;
     }
 }
 
