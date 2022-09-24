@@ -523,9 +523,7 @@ class ATL {
                     icon: `<i class="fas fa-trash-alt"></i>`,
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
-                        let preset = presets.find(p => p.id === updatePreset)
-                        let index = presets.indexOf(preset)
-                        let alteredPresets = presets.splice(index, 1)
+                        let index = presets.findIndex(p => p.id === updatePreset);
                         new Dialog({
                             title: "Conformation",
                             content: `Are you sure you want to remove this preset`,
@@ -534,13 +532,14 @@ class ATL {
                                     label: "Confirm",
                                     icon: `<i class="fas fa-check"></i>`,
                                     callback: () => {
-                                        game.settings.set("ATL", "presets", presets)
+                                        presets.splice(index, 1);
+                                        game.settings.set("ATL", "presets", presets);
                                     }
                                 },
                                 two: {
                                     label: "Return",
                                     icon: `<i class="fas fa-undo-alt"></i>`,
-                                    callback: presetSelector
+                                    callback: () => presetSelector.render(true)
                                 }
                             }
                         }).render(true)
@@ -552,7 +551,8 @@ class ATL {
                     callback: () => new PresetConfig().render(true)
                 }
             }
-        }).render(true)
+        });
+        presetSelector.render(true)
     }
     static getSceneControlButtons(buttons) {
         let tokenButton = buttons.find(b => b.name == "lighting")
