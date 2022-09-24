@@ -10,7 +10,7 @@ export class PresetConfig extends FormApplication {
     /**
      * Whether this app is creating a new preset or not
      */
-    this.newMode = foundry.utils.isEmpty(this.preset);
+    this.newMode = !this.preset.id;
   }
 
   static get defaultOptions() {
