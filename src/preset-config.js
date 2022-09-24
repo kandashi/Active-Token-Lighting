@@ -31,6 +31,21 @@ export class PresetConfig extends FormApplication {
     });
   }
 
+  static savePreset(preset) {
+    // put all the presets into a collection
+    const collection = new Collection();
+    let presets = game.settings.get("ATL", "presets");
+    presets.forEach((p) => collection.set(p.id, p));
+
+    // add or update in collection
+    if (!preset.id) preset.id = foundry.utils.randomID();
+    collection.set(preset.id, preset);
+
+    // save collection
+    presets = collection.toJSON();
+    game.settings.set("ATL", "presets", presets);
+  }
+
   getData(options) {
     const gridUnits = game.system.gridUnits;
 
@@ -53,8 +68,28 @@ export class PresetConfig extends FormApplication {
     };
   }
 
+  _getSubmitData(updateData = {}) {
+    const formData = super._getSubmitData(updateData);
+
+    // Mirror token scale
+    if ("scale" in formData) {
+      formData["texture.scaleX"] = formData.scale * (formData.mirrorX ? -1 : 1);
+      formData["texture.scaleY"] = formData.scale * (formData.mirrorY ? -1 : 1);
+    }
+    ["scale", "mirrorX", "mirrorY"].forEach((k) => delete formData[k]);
+
+    return formData;
+  }
+
   async _updateObject(event, formData) {
-    // TODO
     console.log("ATL |", "_updateObject called with formData:", formData);
+
+    // apply the changes to the original preset
+    Object.entries(formData)
+      .filter(([_, v]) => v !== "")
+      .forEach(([k, v]) => foundry.utils.setProperty(this.preset, k, v));
+    console.log("updated preset:", this.preset);
+
+    PresetConfig.savePreset(this.preset);
   }
 }
