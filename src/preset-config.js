@@ -1,4 +1,13 @@
+/**
+ * The Application used for defining a preset configuration that can be used by the `ATL.preset`
+ * active effect key. It can handle updating an existing preset as well as creating a new one.
+ */
 export class PresetConfig extends FormApplication {
+  /**
+   * Create a new application to add/edit a preset.
+   * @param {Object} object The ATL preset, or `undefined` if creating a new one from scratch
+   * @param {FormApplicationOptions} options Application configuration options
+   */
   constructor(object = {}, options = {}) {
     super(object, options);
 
