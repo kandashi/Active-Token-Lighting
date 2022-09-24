@@ -6,6 +6,11 @@ export class PresetConfig extends FormApplication {
      * The token change preset
      */
     this.preset = this.object;
+
+    /**
+     * Whether this app is creating a new preset or not
+     */
+    this.newMode = foundry.utils.isEmpty(this.preset);
   }
 
   static get defaultOptions() {
@@ -77,6 +82,16 @@ export class PresetConfig extends FormApplication {
       formData["texture.scaleY"] = formData.scale * (formData.mirrorY ? -1 : 1);
     }
     ["scale", "mirrorX", "mirrorY"].forEach((k) => delete formData[k]);
+
+    // Set default name if creating a new preset with no name
+    if (this.newMode && !formData.name) {
+      const presets = game.settings.get("ATL", "presets");
+      const count = presets?.length;
+      formData.name = `New Preset (${count + 1})`;
+    }
+
+    // Remove name change if updating a preset and trying to clear the name
+    if (!this.newMode && "name" in formData && !formData.name) delete formData.name;
 
     return formData;
   }
