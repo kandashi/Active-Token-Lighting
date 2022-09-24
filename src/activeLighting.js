@@ -1,5 +1,6 @@
-
+import { PresetConfig } from "./preset-config.js";
 import { ATLUpdate } from "./updateManager.js";
+
 class ATL {
 
     static init() {
@@ -145,7 +146,7 @@ class ATL {
         }
     }
 
-    static AddPreset(name, object) {
+    /* static AddPreset(name, object) {
         if (!name) {
             ui.notifications.error("Please provide a name for the preset")
             return;
@@ -181,8 +182,8 @@ class ATL {
             presets.push(object)
             game.settings.set("ATL", "presets", presets)
         }
-    }
-    static RemovePreset(name) {
+    } */
+    /* static RemovePreset(name) {
         if (!name) {
             ui.notifications.error("Please provide a name for the preset")
             return;
@@ -199,9 +200,9 @@ class ATL {
             ui.notifications.notify(`${removePreset.name} was removed from the presets`)
         }
         game.settings.set("ATL", "presets", presets)
-    }
+    } */
 
-    static GeneratePreset(preset, copy) {
+    /* static GeneratePreset(preset, copy) {
 
         let { light, dimSight, brightSight, sightAngle, name, height, width, scale, id } = preset ? preset : 0
         let { dim, bright, color, animation, alpha, angle, coloration, contrast, gradual, luminosity, saturation, shadows } = light ? light : 0
@@ -477,12 +478,12 @@ class ATL {
 
         }).render(true)
 
-    }
+    } */
 
-    static async checkString(value) {
+    /* static async checkString(value) {
         if (value === "") return ""
         else return Number(value)
-    }
+    } */
 
     static async UpdatePresets() {
         let presets = await game.settings.get("ATL", "presets")
@@ -502,7 +503,7 @@ class ATL {
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
                         let preset = presets.find(p => p.id === updatePreset)
-                        ATL.GeneratePreset(preset, false)
+                        new PresetConfig(preset).render(true);
                     }
                 },
                 two: {
@@ -511,7 +512,10 @@ class ATL {
                     callback: (html) => {
                         let updatePreset = html.find("[name=presets]")[0].value;
                         let preset = presets.find(p => p.id === updatePreset)
-                        ATL.GeneratePreset(preset, true)
+                        // copy and remove ID so it's created as new
+                        preset = deepClone(preset);
+                        delete preset.id;
+                        new PresetConfig(preset).render(true);
                     }
                 },
                 three: {
@@ -545,10 +549,7 @@ class ATL {
                 four: {
                     label: "Add New",
                     icon: `<i class="fas fa-plus"></i>`,
-                    callback: () => {
-
-                        ATL.GeneratePreset()
-                    }
+                    callback: () => new PresetConfig().render(true)
                 }
             }
         }).render(true)
