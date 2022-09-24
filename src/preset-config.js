@@ -15,7 +15,7 @@ export class PresetConfig extends FormApplication {
 
   static get defaultOptions() {
     return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ["sheet"],
+      classes: ["sheet", "preset-config"],
       title: "ATL Light Editor",
       template: "modules/ATL/templates/preset-config.hbs",
       width: 480,
