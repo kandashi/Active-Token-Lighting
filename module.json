@@ -5,7 +5,7 @@
 	"author": "Kandashi",
 	"version": "0.2.14",
 	"minimumCoreVersion": "9",
-	"compatibleCoreVersion": "9",
+	"compatibleCoreVersion": "10",
 
 	"esmodules": [
 		"src/activeLighting.js",
@@ -21,9 +21,6 @@
 			"module": "ATL"
 		}
 	],
-	"styles": [
-		"/styles/ATL.css"
-	  ],
 	"url": "https://github.com/kandashi/Active-Token-Lighting",
 	"manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",
 	"download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip",
