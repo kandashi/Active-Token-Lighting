@@ -320,6 +320,11 @@ class ATL {
                             }
                         }
                     }
+                    if (updateKey === "sight.visionMode") {
+                        // also update visionMode defaults
+                        const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
+                        for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
+                    }
                     overrides[updateKey] = resultTmp ? resultTmp : result;
                 }
             }
