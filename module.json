@@ -1,12 +1,15 @@
 {
-	"name": "ATL",
+	"id": "ATL",
 	"title": "Active Token Effects",
 	"description": "Active Token Effects",
-	"author": "Kandashi",
+	"authors": [{
+		"name": "Kandashi"
+	}],
 	"version": "0.2.14",
-	"minimumCoreVersion": "9",
-	"compatibleCoreVersion": "9",
-
+	"compatibility": {
+		"minimum": 10,
+		"verified": 10
+	},
 	"esmodules": [
 		"src/activeLighting.js",
 		"src/updateManager.js"
@@ -17,8 +20,7 @@
 			"label": "Token Effects premade",
 			"path": "packs/premade",
 			"system" : "dnd5e",
-			"entity": "Item",
-			"module": "ATL"
+			"type": "Item"
 		}
 	],
 	"styles": [
