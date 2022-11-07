@@ -281,8 +281,32 @@ class ATL {
                     let ot = typeof getProperty(originals, key)
                     if (ot === "null" || ot === "undefined") originals[key] = entity.prototypeToken[key]
                 }
-            }
-            else {
+            } else if (updateKey.startsWith("detectionModes.")) {
+                // special handling for Detection Modes
+                const parts = updateKey.split(".");
+                if (parts.length === 3) {
+                    const [_, id, key] = parts;
+                    const detectionModes =
+                        getProperty(overrides, "detectionModes") ||
+                        getProperty(originals, "detectionModes") ||
+                        [];                    
+                    // find the existing one or create a new one
+                    let dm = detectionModes.find(dm => dm.id === id);
+                    if (!dm) {
+                        dm = { id, enabled: true, range: 0 };
+                        detectionModes.push(dm);
+                    }
+                    // build fake change to handle apply
+                    const fakeChange = duplicate(change);
+                    fakeChange.key = key;
+                    const result = ATL.apply(undefined, fakeChange, undefined, dm[key]);
+                    // update
+                    if (result !== null) {
+                        dm[key] = result;
+                        overrides.detectionModes = detectionModes;
+                    }
+                }
+            } else {
                 let preValue = getProperty(overrides, updateKey) || getProperty(originals, updateKey)
                 let result = ATL.apply(entity, change, originals, preValue);
                 if (change.key === "ATL.alpha") result = result * result
