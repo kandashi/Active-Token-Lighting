@@ -129,8 +129,8 @@ class ATL {
         })
 
         Hooks.on("updateItem", (item, update) => {
-            if (!gm || game.system.id !== "dnd5e" || !item.parent || !update.system) return;
-            if ("equipped" in update.system || "attunement" in update.system) {
+            if (!gm || !(game.system.id === "dnd5e" || game.system.id === "wfrp4e") || !item.parent || !update.system) return;
+            if ("equipped" in update.system || "attunement" in update.system || "worn" in update.system) {
                 let actor = item.parent
                 let ATLeffects = actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
@@ -239,7 +239,26 @@ class ATL {
         if (tokenArray === []) return;
         let overrides = {};
         const originals = entity.prototypeToken
+        const checkWfrpItemEquipped = (game.system.id === "wfrp4e");
 
+        if (checkWfrpItemEquipped) {
+            const tempEFfects = [];
+            for (let i = 0; i < effects.length; i++) {
+                const item = effects[i].item;
+                if (item && (item.type === "armour" || item.type === "weapon" || (item.type === "trapping" && item.system.trappingType.value == "clothingAccessories"))) {
+                    if (item.type === "armour" && item.system.worn.value) {
+                        tempEFfects.push(effects[i]);
+                    } else if (item.type === "weapon" && item.system.equipped) {
+                        tempEFfects.push(effects[i]);
+                    } else if (item.type == "trapping" && item.system.trappingType.value == "clothingAccessories" && item.system.worn) {
+                        tempEFfects.push(effects[i]);
+                    }
+                } else {
+                    tempEFfects.push(effects[i]);
+                }
+            }
+            effects = tempEFfects;
+        }
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
