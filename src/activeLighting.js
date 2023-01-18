@@ -76,15 +76,15 @@ class ATL {
             hint: "Allow users with this role and above to control ATL effects while the GM is not present (Requires reload)",
             scope: "world",
             config: true,
-            type: String,
+            type: Number,
             choices: {
-                4: 'Game Master',
-                3: 'Assistant GM',
-                2: 'Trusted Player',
-                1: 'Player'
+                4: "Game Master",
+                3: "Assistant GM",
+                2: "Trusted Player",
+                1: "Player"
             },
             default: 4,
-            onChange: foundry.utils.debounce(() => window.location.reload(), 100)
+            requiresReload: true,
         });
         game.settings.register("ATL", "presets", {
             scope: "world",
@@ -105,7 +105,7 @@ class ATL {
     static async ready() {
         async function getAllowed () {
             if (game.user.isGM) return true;
-            const gm = game.user === game.users.find((u) => u.isGM && u.active);
+            const gm = !!game.users.find((u) => u.isGM && u.active);
             if (gm) return true;
             const allowControlWithoutGm = await game.settings.get("ATL", "allowControlWithoutGm");
             const userRole = game.user.role;
@@ -118,9 +118,13 @@ class ATL {
             ui.notifications.info('Active Token Lighting effects disabled while GM is not present')
         }
 
+        Hooks.on("userConnected", async (user, connected) => {
+            if (user.isGM) isAllowed = await getAllowed();
+        })
+
         Hooks.on("updateActiveEffect", async (effect, options) => {
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            if (!isAllowed) {
+            if (!isAllowed && !options.disabled) {
                 atlDisabledNotification();
                 return;
             }
