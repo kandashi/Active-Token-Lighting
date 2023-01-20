@@ -105,7 +105,7 @@ class ATL {
     static async ready() {
         async function getAllowed () {
             if (game.user.isGM) return true;
-            const gm = !!game.users.find((u) => u.isGM && u.active);
+            const gm = game.users.some((u) => u.isGM && u.active);
             if (gm) return true;
             const allowControlWithoutGm = await game.settings.get("ATL", "allowControlWithoutGm");
             const userRole = game.user.role;
