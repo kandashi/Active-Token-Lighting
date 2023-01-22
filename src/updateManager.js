@@ -117,7 +117,7 @@ export class ATLUpdate {
             let flag = token.getFlag("ATL", "originals")
             if (!flag) return
             let newData = this.newFlagV9(flag)
-            console.warn(`ATL v9 update: Token ${actor.name} in ${scene.name} updated`)
+            console.warn(`ATL v9 update: Token ${token.name} in ${scene.name} updated`)
             await token.setFlag("ATL", "originals", newData)
         }
     }
