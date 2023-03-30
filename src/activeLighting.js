@@ -293,6 +293,12 @@ class ATL {
         }, []);
         changes.sort((a, b) => a.priority - b.priority);
 
+        // helper function to apply to overrides and originalDelta
+        const applyOverride = (key, value, preValue) => {
+            overrides[key] = value;
+            if (!hasProperty(originalDelta, key)) originalDelta[key] = preValue;
+        };
+
         for (const token of tokenArray) {
             let originalDelta = token.document.flags.ATL?.originals || {};
             originalDelta = flattenObject(originalDelta);
@@ -395,8 +401,7 @@ class ATL {
                             const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
                             for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
                         }
-                        overrides[updateKey] = resultTmp ? resultTmp : result;
-                        if (!hasProperty(originalDelta, updateKey)) originalDelta[updateKey] = preValue;
+                        applyOverride(updateKey, resultTmp ? resultTmp : result, preValue);
                     }
                 }
             }
