@@ -140,9 +140,10 @@ class ATL {
                 atlDisabledNotification();
                 return;
             }
-            const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
+            /* const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects) */
+            ATL.applyEffect(effect.parent, effect);
         })
 
         Hooks.on("deleteActiveEffect", async (effect, options) => {
@@ -272,6 +273,51 @@ class ATL {
             });
         }
     }
+
+    static async applyEffect(document, effect) {
+        // only react to AE changes on actors
+        if (document.documentName !== "Actor") return;
+        // only react to "enabled" AEs
+        if (effect.disabled || effect.isSuppressed) return;
+        
+        // TODO order changes by priority
+        const changes = effect.changes;
+
+        const tokens = document.getActiveTokens();
+        for (const token of tokens) {
+            const originals = token.document.flags.ATL?.originals || {};
+            const originalData = mergeObject(token.document.toObject(), originals);
+            const overrides = {};
+
+            for (const change of changes) {
+                if (!change.key.startsWith("ATL.")) continue;
+
+                const key = change.key.slice(4);
+                
+                // TODO special handling
+
+                const preValue = getProperty(overrides, key) || getProperty(originalData, key);
+                const result = ATL.apply(document, change, originalData, preValue);
+                if (result !== null) {
+                    // TODO special handling
+                    overrides[key] = result;
+
+                    // if we haven't save the original value, save it now
+                    if (!Object.hasOwn(originals, key))
+                        originals[key] = preValue;
+                }
+            }
+
+            // update token if there are updates
+            if (overrides !== {}) {
+                // include originals flag in update
+                overrides["flags.ATL.originals"] = originals;
+                console.log("ATE | Going to update token with", overrides);
+                token.document.update(overrides);
+            }
+        }
+    }
+
     static async applyEffects(entity, effects) {
         if (entity.documentName !== "Actor") return;
         let link = getProperty(entity, "prototypeToken.actorLink")
