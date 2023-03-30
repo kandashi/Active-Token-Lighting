@@ -140,10 +140,10 @@ class ATL {
                 atlDisabledNotification();
                 return;
             }
-            /* const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
+            const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects) */
-            ATL.applyEffect(effect.parent, effect);
+            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            //ATL.applyEffect(effect.parent, effect);
         })
 
         Hooks.on("deleteActiveEffect", async (effect, options) => {
@@ -326,9 +326,6 @@ class ATL {
         if (!link) tokenArray = [entity.token?.object]
         else tokenArray = entity.getActiveTokens()
         if (tokenArray === []) return;
-        let overrides = {};
-        const originals = entity.prototypeToken
-
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
@@ -342,112 +339,138 @@ class ATL {
         }, []);
         changes.sort((a, b) => a.priority - b.priority);
 
-        // Apply all changes
-        for (let change of changes) {
-            if (!change.key.includes("ATL")) continue;
-            let updateKey = change.key.slice(4)
-            if (updateKey === "preset") {
-                let presetArray = game.settings.get("ATL", "presets")
-                let preset = presetArray.find(i => i.name === change.value)
-                if (preset === undefined) {
-                    console.error(`ATL: No preset ${change.value} found`)
-                    return
-                }
-                overrides = duplicate(preset);
-                const checkString = (element) => typeof element === "string"
-                for (const [key, value] of Object.entries(overrides)) {
-                    if (value === "") delete overrides[key]
-                }
-                if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
-                    ui.notifications.error("ATL: preset string error")
-                }
-                delete overrides.id
-                delete overrides.name
-                overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
-                overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
+        for (const token of tokenArray) {
+            let originalDelta = token.document.flags.ATL?.originals || {};
+            originalDelta = flattenObject(originalDelta);
+            const originals = mergeObject(token.document.toObject(), originalDelta);
+            let overrides = {};
 
-                for (const [key, value] of Object.entries(overrides)) {
-                    let ot = typeof getProperty(originals, key)
-                    if (ot === "null" || ot === "undefined") originals[key] = entity.prototypeToken[key]
-                }
-            } else if (updateKey.startsWith("detectionModes.")) {
-                // special handling for Detection Modes
-                const parts = updateKey.split(".");
-                if (parts.length === 3) {
-                    const [_, id, key] = parts;
-                    const detectionModes =
-                        getProperty(overrides, "detectionModes") ||
-                        getProperty(originals, "detectionModes") ||
-                        [];                    
-                    // find the existing one or create a new one
-                    let dm = detectionModes.find(dm => dm.id === id);
-                    if (!dm) {
-                        dm = { id, enabled: true, range: 0 };
-                        detectionModes.push(dm);
+            // Apply all changes
+            for (let change of changes) {
+                if (!change.key.includes("ATL")) continue;
+                let updateKey = change.key.slice(4)
+                if (updateKey === "preset") {
+                    let presetArray = game.settings.get("ATL", "presets")
+                    let preset = presetArray.find(i => i.name === change.value)
+                    if (preset === undefined) {
+                        console.error(`ATL: No preset ${change.value} found`)
+                        return
                     }
-                    // build fake change to handle apply
-                    const fakeChange = duplicate(change);
-                    fakeChange.key = key;
-                    const result = ATL.apply(undefined, fakeChange, undefined, dm[key]);
-                    // update
-                    if (result !== null) {
-                        dm[key] = result;
-                        overrides.detectionModes = detectionModes;
+                    overrides = duplicate(preset);
+                    const checkString = (element) => typeof element === "string"
+                    for (const [key, value] of Object.entries(overrides)) {
+                        if (value === "") delete overrides[key]
                     }
-                }
-            } else {
-                let preValue = getProperty(overrides, updateKey) || getProperty(originals, updateKey)
-                let result = ATL.apply(entity, change, originals, preValue);
-                if (change.key === "ATL.alpha") result = result * result
-                if (result !== null) {
-                    let resultTmp;
-                    if (updateKey === "light.animation" && typeof result === "string") {
-                        try {
-                            resultTmp = JSON.parse(result);
-                        } catch (e) {
-                            // MANAGE STRANGE ERROR FROM USERS
-                            var fixedJSON = result
+                    if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
+                        ui.notifications.error("ATL: preset string error")
+                    }
+                    delete overrides.id
+                    delete overrides.name
+                    overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
+                    overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
 
-                                // Replace ":" with "@colon@" if it's between double-quotes
-                                .replace(/:\s*"([^"]*)"/g, function (match, p1) {
-                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                                })
-
-                                // Replace ":" with "@colon@" if it's between single-quotes
-                                .replace(/:\s*'([^']*)'/g, function (match, p1) {
-                                    return ': "' + p1.replace(/:/g, '@colon@') + '"';
-                                })
-
-                                // Add double-quotes around any tokens before the remaining ":"
-                                .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
-
-                                // Add double-quotes around any tokens after the remaining ":"
-                                .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
-
-                                // Turn "@colon@" back into ":"
-                                .replace(/@colon@/g, ':');
-
-                            resultTmp = JSON.parse(fixedJSON);
-                            for (const [key, value] of Object.entries(resultTmp)) {
-                                resultTmp[key] = ATL.switchType(key, value)
-                            }
+                    for (const [key, value] of Object.entries(overrides)) {
+                        let ot = typeof getProperty(originals, key)
+                        if (ot === "null" || ot === "undefined") originals[key] = entity.prototypeToken[key]
+                    }
+                } else if (updateKey.startsWith("detectionModes.")) {
+                    // special handling for Detection Modes
+                    const parts = updateKey.split(".");
+                    if (parts.length === 3) {
+                        const [_, id, key] = parts;
+                        const detectionModes =
+                            getProperty(overrides, "detectionModes") ||
+                            getProperty(originals, "detectionModes") ||
+                            [];                    
+                        // find the existing one or create a new one
+                        let dm = detectionModes.find(dm => dm.id === id);
+                        if (!dm) {
+                            dm = { id, enabled: true, range: 0 };
+                            detectionModes.push(dm);
+                        }
+                        // build fake change to handle apply
+                        const fakeChange = duplicate(change);
+                        fakeChange.key = key;
+                        const result = ATL.apply(undefined, fakeChange, undefined, dm[key]);
+                        // update
+                        if (result !== null) {
+                            dm[key] = result;
+                            overrides.detectionModes = detectionModes;
                         }
                     }
-                    if (updateKey === "sight.visionMode") {
-                        // also update visionMode defaults
-                        const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
-                        for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
+                } else {
+                    let preValue = getProperty(overrides, updateKey) || getProperty(originals, updateKey)
+                    let result = ATL.apply(entity, change, originals, preValue);
+                    if (change.key === "ATL.alpha") result = result * result
+                    if (result !== null) {
+                        let resultTmp;
+                        if (updateKey === "light.animation" && typeof result === "string") {
+                            try {
+                                resultTmp = JSON.parse(result);
+                            } catch (e) {
+                                // MANAGE STRANGE ERROR FROM USERS
+                                var fixedJSON = result
+
+                                    // Replace ":" with "@colon@" if it's between double-quotes
+                                    .replace(/:\s*"([^"]*)"/g, function (match, p1) {
+                                        return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                    })
+
+                                    // Replace ":" with "@colon@" if it's between single-quotes
+                                    .replace(/:\s*'([^']*)'/g, function (match, p1) {
+                                        return ': "' + p1.replace(/:/g, '@colon@') + '"';
+                                    })
+
+                                    // Add double-quotes around any tokens before the remaining ":"
+                                    .replace(/(['"])?([a-z0-9A-Z_]+)(['"])?\s*:/g, '"$2": ')
+
+                                    // Add double-quotes around any tokens after the remaining ":"
+                                    .replace(/:\s*(['"])?([a-z0-9A-Z_]+)(['"])?/g, ':"$2"')
+
+                                    // Turn "@colon@" back into ":"
+                                    .replace(/@colon@/g, ':');
+
+                                resultTmp = JSON.parse(fixedJSON);
+                                for (const [key, value] of Object.entries(resultTmp)) {
+                                    resultTmp[key] = ATL.switchType(key, value)
+                                }
+                            }
+                        }
+                        if (updateKey === "sight.visionMode") {
+                            // also update visionMode defaults
+                            const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
+                            for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
+                        }
+                        overrides[updateKey] = resultTmp ? resultTmp : result;
+                        if (!Object.hasOwn(originalDelta, updateKey)) originalDelta[updateKey] = preValue;
                     }
-                    overrides[updateKey] = resultTmp ? resultTmp : result;
                 }
             }
+
+            // add originals flag to the update
+            overrides["flags.ATL.originals"] = originalDelta;
+            overrides = flattenObject(overrides);
+            // figure out what changes were removed (i.e. those in originalDelta but not in overrides)
+            const removeDelta = (key) => {
+                const head = key.split(".");
+                const tail = `-=${head.pop()}`;
+                key = ["flags", "ATL", "originals", ...head, tail].join(".");
+                overrides[key] = null;
+            };
+            for (const [key, value] of Object.entries(originalDelta)) {
+                if (!Object.hasOwn(overrides, key)) {
+                    overrides[key] = value;
+                    delete overrides[`flags.ATL.originals.${key}`];
+                    removeDelta(key);
+                }
+            }
+            // add originals flag to the update
+            /* if (isEmpty(originalDelta)) overrides["flags.ATL.-=originals"] = null;
+            else overrides["flags.ATL.originals"] = originalDelta; */
+            // update the token document
+            console.log("ATE | Going to update token", token.document.id, overrides);
+            await token.document.update(overrides);
         }
-        if (changes.length < 1) overrides = originals
-        let updates = duplicate(originals)
-        mergeObject(updates, overrides)
-        if (entity.prototypeToken.randomImg) delete updates.img
-        let updateMap = tokenArray.map(t => mergeObject({ _id: t.id }, updates))
-        await canvas.scene.updateEmbeddedDocuments("Token", updateMap)
     }
 
 
