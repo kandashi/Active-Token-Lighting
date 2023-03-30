@@ -396,7 +396,7 @@ class ATL {
                             for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
                         }
                         overrides[updateKey] = resultTmp ? resultTmp : result;
-                        if (!Object.hasOwn(originalDelta, updateKey)) originalDelta[updateKey] = preValue;
+                        if (!hasProperty(originalDelta, updateKey)) originalDelta[updateKey] = preValue;
                     }
                 }
             }
@@ -412,15 +412,12 @@ class ATL {
                 overrides[key] = null;
             };
             for (const [key, value] of Object.entries(originalDelta)) {
-                if (!Object.hasOwn(overrides, key)) {
+                if (!hasProperty(overrides, key)) {
                     overrides[key] = value;
                     delete overrides[`flags.ATL.originals.${key}`];
                     removeDelta(key);
                 }
             }
-            // add originals flag to the update
-            /* if (isEmpty(originalDelta)) overrides["flags.ATL.-=originals"] = null;
-            else overrides["flags.ATL.originals"] = originalDelta; */
             // update the token document
             console.log("ATE | Going to update token", token.document.id, overrides);
             await token.document.update(overrides);
