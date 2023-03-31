@@ -309,29 +309,33 @@ class ATL {
                 if (!change.key.includes("ATL")) continue;
                 let updateKey = change.key.slice(4)
                 if (updateKey === "preset") {
+                    // get the matching preset
                     let presetArray = game.settings.get("ATL", "presets")
                     let preset = presetArray.find(i => i.name === change.value)
-                    if (preset === undefined) {
+                    if (!preset) {
                         console.error(`ATL: No preset ${change.value} found`)
-                        return
+                        continue;
                     }
-                    overrides = duplicate(preset);
+                    preset = flattenObject(preset);
+                    // validate preset data
+                    for (const [key, value] of Object.entries(preset)) {
+                        if (value === "" || value === undefined || value === null) delete preset[key];
+                    }
                     const checkString = (element) => typeof element === "string"
-                    for (const [key, value] of Object.entries(overrides)) {
-                        if (value === "") delete overrides[key]
-                    }
-                    if ([overrides.dim, overrides.dimSight, overrides.bright, overrides.brightSight].some(checkString)) {
+                    if ([preset["light.dim"], preset["light.bright"], preset["sight.range"]].some(checkString)) {
                         ui.notifications.error("ATL: preset string error")
                     }
-                    delete overrides.id
-                    delete overrides.name
-                    overrides.angle = parseInt(overrides?.angle) || originals?.angle || 360
-                    overrides.sightAngle = parseInt(overrides?.sightAngle) || originals?.sightAngle || 360
-
-                    for (const [key, value] of Object.entries(overrides)) {
-                        let ot = typeof getProperty(originals, key)
-                        if (ot === "null" || ot === "undefined") originals[key] = entity.prototypeToken[key]
-                    }
+                    if ("sight.angle" in preset) preset["sight.angle"] = parseInt(preset["sight.angle"]);
+                    if ("light.angle" in preset) preset["light.angle"] = parseInt(preset["light.angle"]);
+                    // remove preset-specific properties
+                    delete preset.id
+                    delete preset.name
+                    console.log("ATE | apply preset", change.value, preset);
+                    Object.entries(preset)
+                        .forEach(([key, value]) => {
+                            const originalValue = getProperty(originals, key);
+                            applyOverride(key, value, originalValue);
+                        });
                 } else if (updateKey.startsWith("detectionModes.")) {
                     // special handling for Detection Modes
                     const parts = updateKey.split(".");
@@ -404,6 +408,9 @@ class ATL {
                     }
                 }
             }
+
+            console.log("ATE | overrides", JSON.stringify(overrides));
+            console.log("ATE | originalDelta", JSON.stringify(originalDelta));
 
             // add originals flag to the update
             overrides["flags.ATL.originals"] = originalDelta;
