@@ -414,9 +414,6 @@ class ATL {
                 }
             }
 
-            console.log("ATE | overrides", JSON.stringify(overrides));
-            console.log("ATE | originalDelta", JSON.stringify(originalDelta));
-
             // add originals flag to the update
             overrides["flags.ATL.originals"] = originalDelta;
             overrides = flattenObject(overrides);
