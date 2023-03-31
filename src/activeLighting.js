@@ -343,7 +343,7 @@ class ATL {
                         const [_, id, key] = parts;
                         const detectionModes =
                             getProperty(overrides, "detectionModes") ||
-                            getProperty(originals, "detectionModes") ||
+                            duplicate(getProperty(originals, "detectionModes")) ||
                             [];                    
                         // find the existing one or create a new one
                         let dm = detectionModes.find(dm => dm.id === id);
@@ -358,7 +358,8 @@ class ATL {
                         // update
                         if (result !== null) {
                             dm[key] = result;
-                            overrides.detectionModes = detectionModes;
+                            const preValue = getProperty(originals, "detectionModes") || [];
+                            applyOverride("detectionModes", detectionModes, preValue);
                         }
                     }
                 } else {
