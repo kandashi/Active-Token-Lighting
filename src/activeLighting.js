@@ -295,14 +295,13 @@ class ATL {
 
         for (const token of tokenArray) {
             let originalDelta = token.document.flags.ATL?.originals || {};
-            originalDelta = flattenObject(originalDelta);
             const originals = mergeObject(token.document.toObject(), originalDelta);
             let overrides = {};
 
             // helper function to apply to overrides and originalDelta
             const applyOverride = (key, value, preValue) => {
-                overrides[key] = value;
-                if (!(key in originalDelta)) originalDelta[key] = preValue;
+                setProperty(overrides, key, value);
+                if (!hasProperty(originalDelta, key)) setProperty(originalDelta, key, preValue);
             };
 
             // Apply all changes
@@ -416,7 +415,7 @@ class ATL {
                 key = ["flags", "ATL", "originals", ...head, tail].join(".");
                 overrides[key] = null;
             };
-            for (const [key, value] of Object.entries(originalDelta)) {
+            for (const [key, value] of Object.entries(flattenObject(originalDelta))) {
                 if (!(key in overrides)) {
                     overrides[key] = value;
                     delete overrides[`flags.ATL.originals.${key}`];
