@@ -403,7 +403,11 @@ class ATL {
                         if (updateKey === "sight.visionMode") {
                             // also update visionMode defaults
                             const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
-                            for (let [k, v] of Object.entries(visionDefaults)) overrides[`sight.${k}`] = v;
+                            for (let [k, v] of Object.entries(visionDefaults)) {
+                                const key = `sight.${k}`;
+                                const preValue = getProperty(originals, key);
+                                applyOverride(key, v, preValue);
+                            };
                         }
                         applyOverride(updateKey, resultTmp ? resultTmp : result, preValue);
                     }
