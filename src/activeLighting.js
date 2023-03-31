@@ -293,17 +293,17 @@ class ATL {
         }, []);
         changes.sort((a, b) => a.priority - b.priority);
 
-        // helper function to apply to overrides and originalDelta
-        const applyOverride = (key, value, preValue) => {
-            overrides[key] = value;
-            if (!hasProperty(originalDelta, key)) originalDelta[key] = preValue;
-        };
-
         for (const token of tokenArray) {
             let originalDelta = token.document.flags.ATL?.originals || {};
             originalDelta = flattenObject(originalDelta);
             const originals = mergeObject(token.document.toObject(), originalDelta);
             let overrides = {};
+
+            // helper function to apply to overrides and originalDelta
+            const applyOverride = (key, value, preValue) => {
+                overrides[key] = value;
+                if (!(key in originalDelta)) originalDelta[key] = preValue;
+            };
 
             // Apply all changes
             for (let change of changes) {
@@ -417,7 +417,7 @@ class ATL {
                 overrides[key] = null;
             };
             for (const [key, value] of Object.entries(originalDelta)) {
-                if (!hasProperty(overrides, key)) {
+                if (!(key in overrides)) {
                     overrides[key] = value;
                     delete overrides[`flags.ATL.originals.${key}`];
                     removeDelta(key);
