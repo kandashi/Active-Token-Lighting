@@ -128,10 +128,10 @@ class ATL {
                 atlDisabledNotification();
                 return;
             }
-            let totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
+            let totalEffects = effect.parent.actorEffects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (effect.disabled) ATLeffects.push(effect)
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            ATL.applyEffects(effect.parent, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (effect, options) => {
@@ -140,7 +140,7 @@ class ATL {
                 atlDisabledNotification();
                 return;
             }
-            const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
+            const totalEffects = effect.parent.actorEffects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
@@ -151,23 +151,24 @@ class ATL {
                 atlDisabledNotification();
                 return;
             }
-            let ATLeffects = effect.parent.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = effect.parent.actorEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             ATL.applyEffects(effect.parent, ATLeffects)
 
         })
 
         Hooks.on("createToken", (doc, options, id) => {
             if (!isAllowed) return;
-            let ATLeffects = doc.actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects.length > 0) ATL.applyEffects(doc.actor, ATLeffects)
+            let ATLeffects = doc.actor.actorEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            ATL.applyEffects(doc.actor, ATLeffects)
         })
 
         Hooks.on("canvasReady", () => {
             if (!isAllowed) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
             for (let token of linkedTokens) {
-                let ATLeffects = token.actor?.effects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+                let ATLeffects = token.actor?.actorEffects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+                if (!ATLeffects) ATLeffects = [];
+                ATL.applyEffects(token.actor, ATLeffects);
             }
         })
 
@@ -175,8 +176,8 @@ class ATL {
             if (!isAllowed || !(game.system.id === "dnd5e" || game.system.id === "wfrp4e") || !item.parent || !update.system) return;
             if ("equipped" in update.system || "attunement" in update.system || "worn" in update.system) {
                 let actor = item.parent
-                let ATLeffects = actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
+                let ATLeffects = actor.actorEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+                ATL.applyEffects(actor, ATLeffects);
             }
 
         })
@@ -184,7 +185,7 @@ class ATL {
         if (!isAllowed) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
         for (let token of linkedTokens) {
-            let ATLeffects = token.actor?.effects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = token.actor?.actorEffects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
         }
     }
@@ -282,26 +283,6 @@ class ATL {
         if (tokenArray === []) return;
         let overrides = {};
         const originals = entity.prototypeToken
-        const checkWfrpItemEquipped = (game.system.id === "wfrp4e");
-
-        if (checkWfrpItemEquipped) {
-            const tempEFfects = [];
-            for (let i = 0; i < effects.length; i++) {
-                const item = effects[i].item;
-                if (item && (item.type === "armour" || item.type === "weapon" || (item.type === "trapping" && item.system.trappingType.value == "clothingAccessories"))) {
-                    if (item.type === "armour" && item.system.worn.value) {
-                        tempEFfects.push(effects[i]);
-                    } else if (item.type === "weapon" && item.system.equipped) {
-                        tempEFfects.push(effects[i]);
-                    } else if (item.type == "trapping" && item.system.trappingType.value == "clothingAccessories" && item.system.worn) {
-                        tempEFfects.push(effects[i]);
-                    }
-                } else {
-                    tempEFfects.push(effects[i]);
-                }
-            }
-            effects = tempEFfects;
-        }
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
