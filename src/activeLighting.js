@@ -408,13 +408,12 @@ class ATL {
     static apply(token, change, originals, preValue) {
         const modes = CONST.ACTIVE_EFFECT_MODES;
         switch (change.mode) {
-            case modes.CUSTOM:
-                return ATL.applyCustom(token, change, originals, preValue);
             case modes.ADD:
                 return ATL.applyAdd(token, change, originals, preValue);
             case modes.MULTIPLY:
                 return ATL.applyMultiply(token, change, originals, preValue);
             case modes.OVERRIDE:
+            case modes.CUSTOM:
             case modes.UPGRADE:
             case modes.DOWNGRADE:
                 return ATL.applyOverride(token, change, originals, preValue);
