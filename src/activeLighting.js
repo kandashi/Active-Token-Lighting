@@ -130,7 +130,7 @@ class ATL {
         })
 
         Hooks.on("updateItem", (item, change, options, userId) => {
-            if (game.userId !== userId || game.system.id !== "dnd5e" || !item.parent || !update.system) return;
+            if (game.userId !== userId || game.system.id !== "dnd5e" || !item.parent || !change.system) return;
             if ("equipped" in change.system || "attunement" in change.system) {
                 let actor = item.parent
                 let ATLeffects = actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
