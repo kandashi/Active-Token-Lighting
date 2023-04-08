@@ -71,21 +71,6 @@ class ATL {
             default: false,
             type: Boolean,
         });
-        game.settings.register("ATL", "allowControlWithoutGm", {
-            name: "Allow Control without GM",
-            hint: "Allow users with this role and above to control ATL effects while the GM is not present (Requires reload)",
-            scope: "world",
-            config: true,
-            type: Number,
-            choices: {
-                4: "Game Master",
-                3: "Assistant GM",
-                2: "Trusted Player",
-                1: "Player"
-            },
-            default: 4,
-            requiresReload: true,
-        });
         game.settings.register("ATL", "presets", {
             scope: "world",
             config: false,
@@ -103,67 +88,40 @@ class ATL {
 
     }
     static async ready() {
-        async function getAllowed () {
-            if (game.user.isGM) return true;
-            const gm = game.users.some((u) => u.isGM && u.active);
-            if (gm) return true;
-            const allowControlWithoutGm = await game.settings.get("ATL", "allowControlWithoutGm");
-            const userRole = game.user.role;
-            if (userRole >= allowControlWithoutGm) return true;
-            return false;
-        }
-        let isAllowed = await getAllowed();
-
-        function atlDisabledNotification() {
-            ui.notifications.info('Active Token Lighting effects disabled while GM is not present')
-        }
-
-        Hooks.on("userConnected", async (user, connected) => {
-            if (user.isGM) isAllowed = await getAllowed();
-        })
-
-        Hooks.on("updateActiveEffect", async (effect, options) => {
+        Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
+            if (game.userId !== userId) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            if (!isAllowed && !options.disabled) {
-                atlDisabledNotification();
-                return;
-            }
             let totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (effect.disabled) ATLeffects.push(effect)
             if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
 
-        Hooks.on("createActiveEffect", async (effect, options) => {
+        Hooks.on("createActiveEffect", async (effect, options, userId) => {
+            if (game.userId !== userId) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            if (!isAllowed) {
-                atlDisabledNotification();
-                return;
-            }
             const totalEffects = effect.parent.effects.contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
 
-        Hooks.on("deleteActiveEffect", async (effect, options) => {
+        Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
+            if (game.userId !== userId) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            if (!isAllowed) {
-                atlDisabledNotification();
-                return;
-            }
             let ATLeffects = effect.parent.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             ATL.applyEffects(effect.parent, ATLeffects)
 
         })
 
-        Hooks.on("createToken", (doc, options, id) => {
-            if (!isAllowed) return;
+        Hooks.on("createToken", (doc, options, userId) => {
+            if (game.userId !== userId) return;
             let ATLeffects = doc.actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects.length > 0) ATL.applyEffects(doc.actor, ATLeffects)
         })
 
         Hooks.on("canvasReady", () => {
-            if (!isAllowed) return;
+            const firstGM = game.users?.find(u => u.isGM && u.active);
+            if (game.userId !== firstGM?.id) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
             for (let token of linkedTokens) {
                 let ATLeffects = token.actor?.effects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
@@ -171,9 +129,9 @@ class ATL {
             }
         })
 
-        Hooks.on("updateItem", (item, update) => {
-            if (!isAllowed || game.system.id !== "dnd5e" || !item.parent || !update.system) return;
-            if ("equipped" in update.system || "attunement" in update.system) {
+        Hooks.on("updateItem", (item, change, options, userId) => {
+            if (game.userId !== userId || game.system.id !== "dnd5e" || !item.parent || !update.system) return;
+            if ("equipped" in change.system || "attunement" in change.system) {
                 let actor = item.parent
                 let ATLeffects = actor.effects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
                 if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
@@ -181,7 +139,8 @@ class ATL {
 
         })
 
-        if (!isAllowed) return;
+        const firstGM = game.users?.find(u => u.isGM && u.active);
+        if (game.userId !== firstGM?.id) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
         for (let token of linkedTokens) {
             let ATLeffects = token.actor?.effects?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
