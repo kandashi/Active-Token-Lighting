@@ -20,6 +20,11 @@ export class PresetConfig extends FormApplication {
      * Whether this app is creating a new preset or not
      */
     this.newMode = !this.preset.id;
+
+    /**
+     * An array of form field names that were changed
+     */
+    this.fieldsChanged = [];
   }
 
   static get defaultOptions() {
@@ -105,15 +110,54 @@ export class PresetConfig extends FormApplication {
     return formData;
   }
 
+  async _onChangeInput(event) {
+    super._onChangeInput(event);
+
+    // save the field's name that was changed
+    const el = event.target;
+    if (el.name) this.fieldsChanged.push(el.name);
+  }
+
   async _updateObject(event, formData) {
     console.log("ATL |", "_updateObject called with formData:", formData);
 
     // apply the changes to the original preset
     Object.entries(formData)
-      .filter(([_, v]) => v !== "")
-      .forEach(([k, v]) => foundry.utils.setProperty(this.preset, k, v));
+      .filter(([k, _]) => this.fieldsChanged.includes(k))
+      .forEach(([k, v]) => {
+        if (v === "" || v === null) this._clearProperty(this.preset, k);
+        else foundry.utils.setProperty(this.preset, k, v);
+      });
     console.log("updated preset:", this.preset);
 
     PresetConfig.savePreset(this.preset);
+  }
+
+  _clearProperty(object, key) {
+    let target = object;
+    let cleared = false;
+    let parts;
+
+    // Convert the key to an object reference if it contains dot notation
+    if (key.indexOf(".") !== -1) {
+      parts = key.split(".");
+      key = parts.pop();
+      target = parts.reduce((o, i) => o[i], object);
+    }
+
+    // Update the target
+    if (target && target.hasOwnProperty(key)) {
+      cleared = true;
+      delete target[key];
+      // recursivly call to remove empty objects
+      if (parts) {
+        const remainingKey = parts.join(".");
+        if (object[remainingKey] && isEmpty(object[remainingKey]))
+          this._clearProperty(object, remainingKey);
+      }
+    }
+
+    // Return changed status
+    return cleared;
   }
 }
