@@ -326,8 +326,8 @@ class ATL {
                     let result = ATL.apply(entity, change, originals, preValue);
                     if (change.key === "ATL.alpha") result = result * result
                     if (result !== null) {
-                        let resultTmp;
                         if (updateKey === "light.animation" && typeof result === "string") {
+                            let resultTmp;
                             try {
                                 resultTmp = JSON.parse(result);
                             } catch (e) {
@@ -358,8 +358,16 @@ class ATL {
                                     resultTmp[key] = ATL.switchType(key, value)
                                 }
                             }
+                            // update each key separately to save the original correctly
+                            for (let [k, v] of Object.entries(resultTmp)) {
+                                const key = `${updateKey}.${k}`;
+                                const preValue = getProperty(originals, key);
+                                applyOverride(key, v, preValue);
+                            }
                         }
-                        if (updateKey === "sight.visionMode") {
+                        else if (updateKey === "sight.visionMode") {
+                            // do normal update
+                            applyOverride(updateKey, result, preValue);
                             // also update visionMode defaults
                             const visionDefaults = CONFIG.Canvas.visionModes[result]?.vision?.defaults || {};
                             for (let [k, v] of Object.entries(visionDefaults)) {
@@ -368,7 +376,8 @@ class ATL {
                                 applyOverride(key, v, preValue);
                             };
                         }
-                        applyOverride(updateKey, resultTmp ? resultTmp : result, preValue);
+                        else
+                            applyOverride(updateKey, result, preValue);
                     }
                 }
             }
