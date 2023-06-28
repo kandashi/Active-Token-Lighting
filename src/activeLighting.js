@@ -96,7 +96,6 @@ class ATL {
         Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            if (!effect.parent.actorEffects) return;
             let totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (effect.disabled) ATLeffects.push(effect)
