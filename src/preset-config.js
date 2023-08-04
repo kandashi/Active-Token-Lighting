@@ -116,6 +116,8 @@ export class PresetConfig extends FormApplication {
     // save the field's name that was changed
     const el = event.target;
     if (el.name) this.fieldsChanged.push(el.name);
+    // colorPicker has matching name in the dataset
+    else if (el.dataset.edit) this.fieldsChanged.push(el.dataset.edit);
   }
 
   async _updateObject(event, formData) {

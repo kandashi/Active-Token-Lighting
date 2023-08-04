@@ -14,7 +14,7 @@
   "version": "0.4.03",
   "compatibility": {
     "minimum": 10,
-    "verified": 10
+    "verified": 11
   },
   "esmodules": ["src/activeLighting.js", "src/updateManager.js"],
   "packs": [
