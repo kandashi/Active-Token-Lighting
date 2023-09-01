@@ -99,7 +99,7 @@ class ATL {
             let totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (effect.disabled) ATLeffects.push(effect)
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            ATL.applyEffects(effect.parent, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (effect, options, userId) => {
