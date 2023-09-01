@@ -96,6 +96,7 @@ export class PresetConfig extends FormApplication {
       formData["texture.scaleY"] = formData.scale * (formData.mirrorY ? -1 : 1);
     }
     ["scale", "mirrorX", "mirrorY"].forEach((k) => delete formData[k]);
+    if (this.fieldsChanged.includes("scale")) this.fieldsChanged.push("texture.scaleX", "texture.scaleY");
 
     // Set default name if creating a new preset with no name
     if (this.newMode && !formData.name) {
