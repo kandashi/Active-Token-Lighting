@@ -134,11 +134,12 @@ class ATL {
         })
 
         Hooks.on("updateItem", (item, change, options, userId) => {
-            if (game.userId !== userId || !(game.system.id === "dnd5e" || game.system.id === "wfrp4e") || !item.parent || !change.system) return;
-            if ("equipped" in change.system || "attunement" in change.system) {
+            if (game.userId !== userId || !item.parent) return;
+            if ((game.system.id === "dnd5e" && (hasProperty(change, "system.equipped") || hasProperty(change, "system.attunement")))
+                || (game.system.id === "wfrp4e" && hasProperty(change, "system.worn.value"))) {
                 let actor = item.parent
                 let ATLeffects = getEffects(actor).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects.length > 0) ATL.applyEffects(actor, ATLeffects)
+                ATL.applyEffects(actor, ATLeffects)
             }
         })
 
