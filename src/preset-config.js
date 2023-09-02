@@ -96,6 +96,7 @@ export class PresetConfig extends FormApplication {
       formData["texture.scaleY"] = formData.scale * (formData.mirrorY ? -1 : 1);
     }
     ["scale", "mirrorX", "mirrorY"].forEach((k) => delete formData[k]);
+    if (this.fieldsChanged.includes("scale")) this.fieldsChanged.push("texture.scaleX", "texture.scaleY");
 
     // Set default name if creating a new preset with no name
     if (this.newMode && !formData.name) {
@@ -116,6 +117,8 @@ export class PresetConfig extends FormApplication {
     // save the field's name that was changed
     const el = event.target;
     if (el.name) this.fieldsChanged.push(el.name);
+    // colorPicker has matching name in the dataset
+    else if (el.dataset.edit) this.fieldsChanged.push(el.dataset.edit);
   }
 
   async _updateObject(event, formData) {
