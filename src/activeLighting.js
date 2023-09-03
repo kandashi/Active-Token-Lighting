@@ -149,6 +149,21 @@ class ATL {
             }
         })
 
+        // only register these hooks for v11's new transferral mode
+        if (ATL.newTransferral()) {
+            const createDeleteItem = (item, options, userId) => {
+                // same user and it's an item on an actor
+                if (game.userId !== userId || !(item.parent instanceof Actor)) return;
+                // there's at least one ATL-related effect
+                if (!item.effects.some(e => e.changes.some(c => c.key.startsWith("ATL.")))) return;
+                // apply the effects
+                const actor = item.parent;
+                ATL.applyEffects(actor, actor.appliedEffects);
+            };
+            Hooks.on("createItem", createDeleteItem);
+            Hooks.on("deleteItem", createDeleteItem);
+        }
+
         const firstGM = game.users?.find(u => u.isGM && u.active);
         if (game.userId !== firstGM?.id) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
