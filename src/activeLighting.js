@@ -102,7 +102,7 @@ class ATL {
         Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
+            let totalEffects = getEffects(effect.parent).filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (effect.disabled) ATLeffects.push(effect)
             ATL.applyEffects(effect.parent, ATLeffects)
@@ -111,7 +111,7 @@ class ATL {
         Hooks.on("createActiveEffect", async (effect, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            const totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
+            const totalEffects = getEffects(effect.parent).filter(i => !i.disabled)
             let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
             if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
