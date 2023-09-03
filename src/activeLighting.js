@@ -87,9 +87,15 @@ class ATL {
         
 
     }
+
+    static newTransferral() {
+        return game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
+    }
+
     static async ready() {
         const getEffects = (actor) => {
-            if (game.system.id === "wfrp4e") return actor?.actorEffects;
+            if (ATL.newTransferral()) return actor?.appliedEffects;
+            else if (game.system.id === "wfrp4e") return actor?.actorEffects;
             return actor?.effects;
         };
 
