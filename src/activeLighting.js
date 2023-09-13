@@ -87,39 +87,70 @@ class ATL {
         
 
     }
+
     static async ready() {
+        const newTransferral = game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
         const getEffects = (actor) => {
-            if (game.system.id === "wfrp4e") return actor?.actorEffects;
-            return actor?.effects;
+            if (!actor) return [];
+            // get the "active" effects on the actor
+            let effects;
+            if (newTransferral) effects = actor.appliedEffects;
+            else if (game.system.id === "wfrp4e")
+              effects = actor.actorEffects.filter((e) => !e.disabled && !e.isSuppressed);
+            else effects = actor.effects.filter((e) => !e.disabled && !e.isSuppressed);
+            // only return effects that have some ATL changes in them
+            return effects.filter(e => e.changes.some(c => c.key.startsWith("ATL.")));
         };
 
         Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
-            if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
-            if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
-            let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (effect.disabled) ATLeffects.push(effect)
-            ATL.applyEffects(effect.parent, ATLeffects)
+            // same user
+            if (game.userId !== userId) return;
+            // check that the effect is on an actor or an embedded item (for new transferral)
+            let actor;
+            if (effect.parent instanceof Actor) actor = effect.parent;
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
+                actor = effect.parent.parent;
+            else return;
+            // apply the effects
+            let ATLeffects = getEffects(actor);
+            ATL.applyEffects(actor, ATLeffects);
         })
 
         Hooks.on("createActiveEffect", async (effect, options, userId) => {
-            if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
-            if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            const totalEffects = getEffects(effect.parent).contents.filter(i => !i.disabled)
-            let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
+            // same user and effect is active
+            if (game.userId !== userId || effect.disabled || effect.isSuppressed) return;
+            // check that the effect is on an actor or an embedded item (for new transferral)
+            let actor;
+            if (effect.parent instanceof Actor) actor = effect.parent;
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
+                actor = effect.parent.parent;
+            else return;
+            // there's at least one ATL-related effect
+            if (!effect.changes?.some(c => c.key.startsWith("ATL."))) return;
+            // apply the effects
+            let ATLeffects = getEffects(actor);
+            ATL.applyEffects(actor, ATLeffects);
         })
 
         Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
-            if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
-            if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let ATLeffects = getEffects(effect.parent).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            ATL.applyEffects(effect.parent, ATLeffects)
+            // same user and effect is active
+            if (game.userId !== userId || effect.disabled || effect.isSuppressed) return;
+            // check that the effect is on an actor or an embedded item (for new transferral)
+            let actor;
+            if (effect.parent instanceof Actor) actor = effect.parent;
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
+                actor = effect.parent.parent;
+            else return;
+            // there's at least one ATL-related effect
+            if (!effect.changes?.some(c => c.key.startsWith("ATL."))) return;
+            // apply the effects
+            let ATLeffects = getEffects(actor);
+            ATL.applyEffects(actor, ATLeffects);
         })
 
         Hooks.on("createToken", (doc, options, userId) => {
             if (game.userId !== userId) return;
-            let ATLeffects = getEffects(doc.actor).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = getEffects(doc.actor)
             if (ATLeffects.length > 0) ATL.applyEffects(doc.actor, ATLeffects)
         })
 
@@ -128,27 +159,43 @@ class ATL {
             if (game.userId !== firstGM?.id) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
             for (let token of linkedTokens) {
-                let ATLeffects = getEffects(token.actor)?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+                let ATLeffects = getEffects(token.actor)
+                if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
             }
         })
 
         Hooks.on("updateItem", (item, change, options, userId) => {
             if (game.userId !== userId || !item.parent) return;
             if ((game.system.id === "dnd5e" && (hasProperty(change, "system.equipped") || hasProperty(change, "system.attunement")))
-                || (game.system.id === "wfrp4e" && hasProperty(change, "system.worn.value"))) {
+                || (game.system.id === "wfrp4e" && hasProperty(change, "system.worn.value"))
+                || (game.system.id === "swade" && hasProperty(change, "system.equipStatus"))) {
                 let actor = item.parent
-                let ATLeffects = getEffects(actor).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+                let ATLeffects = getEffects(actor)
                 ATL.applyEffects(actor, ATLeffects)
             }
         })
+
+        // only register these hooks for v11's new transferral mode
+        if (newTransferral) {
+            const createDeleteItem = (item, options, userId) => {
+                // same user and it's an item on an actor
+                if (game.userId !== userId || !(item.parent instanceof Actor)) return;
+                // there's at least one ATL-related effect
+                if (!item.effects.some(e => e.changes.some(c => c.key.startsWith("ATL.")))) return;
+                // apply the effects
+                const actor = item.parent;
+                ATL.applyEffects(actor, actor.appliedEffects);
+            };
+            Hooks.on("createItem", createDeleteItem);
+            Hooks.on("deleteItem", createDeleteItem);
+        }
 
         const firstGM = game.users?.find(u => u.isGM && u.active);
         if (game.userId !== firstGM?.id) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
         for (let token of linkedTokens) {
-            let ATLeffects = getEffects(token.actor)?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+            let ATLeffects = getEffects(token.actor)
+            if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
         }
     }
 

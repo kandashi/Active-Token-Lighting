@@ -9,6 +9,14 @@ There are 3 preset values for torch, lantern and candle. Use `ATL.preset` and va
 
 Works very well alongside DAE for equip-toggle effects (Goggles of Night for example) or with Midi QoL for consumables (like torches)
 
+## System Compatibility
+
+Most game systems work out-of-the-box, including those using the new active effect transferral mode introduced in Foundry v11. There is, hoever, some code for specific systems to improve compatibility:
+
+- D&D 5e (dnd5e): Active effects on items only apply when equipped and attuned (if applicable), so there's special handling when those are changed (e.g. unequipping an item with an effect will turn off the effect)
+- Warhammer Fantasy Roleplay 4e (wfrp4e): same as above with equipped items
+- Savage Worlds Adventure Edition (swade): same as above with equippable items
+
 ## Premade Items
 
  These are made and (and only compatible with) the dnd5e system, but the syntax will apply across all systems.
