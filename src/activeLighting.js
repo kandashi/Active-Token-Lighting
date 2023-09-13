@@ -88,16 +88,13 @@ class ATL {
 
     }
 
-    static newTransferral() {
-        return game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
-    }
-
     static async ready() {
+        const newTransferral = game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
         const getEffects = (actor) => {
             if (!actor) return [];
             // get the "active" effects on the actor
             let effects;
-            if (ATL.newTransferral()) effects = actor.appliedEffects;
+            if (newTransferral) effects = actor.appliedEffects;
             else if (game.system.id === "wfrp4e")
               effects = actor.actorEffects.filter((e) => !e.disabled && !e.isSuppressed);
             else effects = actor.effects.filter((e) => !e.disabled && !e.isSuppressed);
@@ -111,7 +108,7 @@ class ATL {
             // check that the effect is on an actor or an embedded item (for new transferral)
             let actor;
             if (effect.parent instanceof Actor) actor = effect.parent;
-            else if (ATL.newTransferral() && effect.parent?.parent instanceof Actor)
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
                 actor = effect.parent.parent;
             else return;
             // apply the effects
@@ -125,7 +122,7 @@ class ATL {
             // check that the effect is on an actor or an embedded item (for new transferral)
             let actor;
             if (effect.parent instanceof Actor) actor = effect.parent;
-            else if (ATL.newTransferral() && effect.parent?.parent instanceof Actor)
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
                 actor = effect.parent.parent;
             else return;
             // there's at least one ATL-related effect
@@ -141,7 +138,7 @@ class ATL {
             // check that the effect is on an actor or an embedded item (for new transferral)
             let actor;
             if (effect.parent instanceof Actor) actor = effect.parent;
-            else if (ATL.newTransferral() && effect.parent?.parent instanceof Actor)
+            else if (newTransferral && effect.parent?.parent instanceof Actor)
                 actor = effect.parent.parent;
             else return;
             // there's at least one ATL-related effect
@@ -179,7 +176,7 @@ class ATL {
         })
 
         // only register these hooks for v11's new transferral mode
-        if (ATL.newTransferral()) {
+        if (newTransferral) {
             const createDeleteItem = (item, options, userId) => {
                 // same user and it's an item on an actor
                 if (game.userId !== userId || !(item.parent instanceof Actor)) return;
