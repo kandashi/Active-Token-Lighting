@@ -114,8 +114,6 @@ class ATL {
             else if (ATL.newTransferral() && effect.parent?.parent instanceof Actor)
                 actor = effect.parent.parent;
             else return;
-            // there's at least one ATL-related effect
-            if (!effect.changes?.some(effect => effect.key.startsWith("ATL."))) return;
             // apply the effects
             let ATLeffects = getEffects(actor);
             ATL.applyEffects(actor, ATLeffects);
