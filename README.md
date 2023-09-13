@@ -13,9 +13,9 @@ Works very well alongside DAE for equip-toggle effects (Goggles of Night for exa
 
 Most game systems work out-of-the-box, including those using the new active effect transferral mode introduced in Foundry v11. There is, hoever, some code for specific systems to improve compatibility:
 
-- D&D 5e: Active effects on items only apply when equipped and attuned (if applicable), so there's special handling when those are changed (e.g. unequipping an item with an effect will turn off the effect)
-- Warhammer Fantasy Roleplay 4e: same as above with equipped items
-- Savage Worlds Adventure Edition: same as above with equippable items
+- D&D 5e (dnd5e): Active effects on items only apply when equipped and attuned (if applicable), so there's special handling when those are changed (e.g. unequipping an item with an effect will turn off the effect)
+- Warhammer Fantasy Roleplay 4e (wfrp4e): same as above with equipped items
+- Savage Worlds Adventure Edition (swade): same as above with equippable items
 
 ## Premade Items
 
