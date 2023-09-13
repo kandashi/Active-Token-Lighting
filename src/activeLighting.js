@@ -106,10 +106,19 @@ class ATL {
         };
 
         Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
-            if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
-            if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let ATLeffects = getEffects(effect.parent)
-            ATL.applyEffects(effect.parent, ATLeffects)
+            // same user
+            if (game.userId !== userId) return;
+            // check that the effect is on an actor or an embedded item (for new transferral)
+            let actor;
+            if (effect.parent instanceof Actor) actor = effect.parent;
+            else if (ATL.newTransferral() && effect.parent?.parent instanceof Actor)
+                actor = effect.parent.parent;
+            else return;
+            // there's at least one ATL-related effect
+            if (!effect.changes?.some(effect => effect.key.startsWith("ATL."))) return;
+            // apply the effects
+            let ATLeffects = getEffects(actor);
+            ATL.applyEffects(actor, ATLeffects);
         })
 
         Hooks.on("createActiveEffect", async (effect, options, userId) => {
