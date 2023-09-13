@@ -94,38 +94,41 @@ class ATL {
 
     static async ready() {
         const getEffects = (actor) => {
-            if (ATL.newTransferral()) return actor?.appliedEffects;
-            else if (game.system.id === "wfrp4e") return actor?.actorEffects;
-            return actor?.effects;
+            if (!actor) return [];
+            // get the "active" effects on the actor
+            let effects;
+            if (ATL.newTransferral()) effects = actor.appliedEffects;
+            else if (game.system.id === "wfrp4e")
+              effects = actor.actorEffects.filter((e) => !e.disabled && !e.isSuppressed);
+            else effects = actor.effects.filter((e) => !e.disabled && !e.isSuppressed);
+            // only return effects that have some ATL changes in them
+            return effects.filter(e => e.changes.some(c => c.key.startsWith("ATL.")));
         };
 
         Hooks.on("updateActiveEffect", async (effect, change, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let totalEffects = getEffects(effect.parent).filter(i => !i.disabled)
-            let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (effect.disabled) ATLeffects.push(effect)
+            let ATLeffects = getEffects(effect.parent)
             ATL.applyEffects(effect.parent, ATLeffects)
         })
 
         Hooks.on("createActiveEffect", async (effect, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            const totalEffects = getEffects(effect.parent).filter(i => !i.disabled)
-            let ATLeffects = totalEffects.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = getEffects(effect.parent)
             if (ATLeffects.length > 0) ATL.applyEffects(effect.parent, ATLeffects)
         })
 
         Hooks.on("deleteActiveEffect", async (effect, options, userId) => {
             if (game.userId !== userId || !(effect.parent instanceof Actor)) return;
             if (!effect.changes?.find(effect => effect.key.includes("ATL"))) return;
-            let ATLeffects = getEffects(effect.parent).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = getEffects(effect.parent)
             ATL.applyEffects(effect.parent, ATLeffects)
         })
 
         Hooks.on("createToken", (doc, options, userId) => {
             if (game.userId !== userId) return;
-            let ATLeffects = getEffects(doc.actor).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+            let ATLeffects = getEffects(doc.actor)
             if (ATLeffects.length > 0) ATL.applyEffects(doc.actor, ATLeffects)
         })
 
@@ -134,8 +137,8 @@ class ATL {
             if (game.userId !== firstGM?.id) return;
             let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
             for (let token of linkedTokens) {
-                let ATLeffects = getEffects(token.actor)?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-                if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+                let ATLeffects = getEffects(token.actor)
+                if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
             }
         })
 
@@ -145,7 +148,7 @@ class ATL {
                 || (game.system.id === "wfrp4e" && hasProperty(change, "system.worn.value"))
                 || (game.system.id === "swade" && hasProperty(change, "system.equipStatus"))) {
                 let actor = item.parent
-                let ATLeffects = getEffects(actor).filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
+                let ATLeffects = getEffects(actor)
                 ATL.applyEffects(actor, ATLeffects)
             }
         })
@@ -169,8 +172,8 @@ class ATL {
         if (game.userId !== firstGM?.id) return;
         let linkedTokens = canvas.tokens.placeables.filter(t => !t.document.link)
         for (let token of linkedTokens) {
-            let ATLeffects = getEffects(token.actor)?.filter(entity => !!entity.changes.find(effect => effect.key.includes("ATL")))
-            if (ATLeffects?.length > 0) ATL.applyEffects(token.actor, ATLeffects)
+            let ATLeffects = getEffects(token.actor)
+            if (ATLeffects.length > 0) ATL.applyEffects(token.actor, ATLeffects)
         }
     }
 
