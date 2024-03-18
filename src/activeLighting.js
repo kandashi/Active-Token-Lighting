@@ -289,7 +289,7 @@ class ATL {
         let tokenArray = []
         if (!link) tokenArray = [entity.token?.object]
         else tokenArray = entity.getActiveTokens()
-        if (tokenArray === []) return;
+        if (foundry.utils.isEmpty(tokenArray)) return;
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
