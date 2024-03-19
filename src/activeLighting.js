@@ -284,12 +284,8 @@ class ATL {
     }
     static async applyEffects(entity, effects) {
         if (entity.documentName !== "Actor") return;
-        let link = getProperty(entity, "prototypeToken.actorLink")
-        if (link === undefined) link = true
-        let tokenArray = []
-        if (!link) tokenArray = [entity.token?.object]
-        else tokenArray = entity.getActiveTokens()
-        if (foundry.utils.isEmpty(tokenArray)) return;
+        const tokenArray = entity.getActiveTokens();
+        if (!tokenArray.length) return;
 
         // Organize non-disabled effects by their application priority
         const changes = effects.reduce((changes, e) => {
