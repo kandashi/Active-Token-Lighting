@@ -13,8 +13,8 @@
   ],
   "version": "0.6.2",
   "compatibility": {
-    "minimum": 10,
-    "verified": 11
+    "minimum": 11,
+    "verified": 12
   },
   "esmodules": ["src/activeLighting.js", "src/updateManager.js"],
   "packs": [
