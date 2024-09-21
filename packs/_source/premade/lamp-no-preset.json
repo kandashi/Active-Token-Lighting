@@ -1,0 +1,236 @@
+{
+  "_id": "gWyWIB5mFSsB9u0M",
+  "name": "Lamp (No Preset)",
+  "type": "consumable",
+  "img": "icons/commodities/treasure/lantern-stone-grey.webp",
+  "effects": [
+    {
+      "_id": "HmVtWWjCq26FlwOR",
+      "flags": {
+        "dae": {
+          "stackable": false,
+          "specialDuration": [],
+          "transfer": true,
+          "macroRepeat": "none"
+        },
+        "ActiveAuras": {
+          "isAura": false,
+          "radius": null,
+          "aura": "None",
+          "alignment": "",
+          "type": "",
+          "ignoreSelf": false,
+          "height": false,
+          "hidden": false,
+          "hostile": false,
+          "onlyOnce": false
+        }
+      },
+      "changes": [
+        {
+          "key": "ATL.light.dim",
+          "value": "45",
+          "mode": 2,
+          "priority": 40
+        },
+        {
+          "key": "ATL.light.bright",
+          "value": "15",
+          "mode": 2,
+          "priority": 40
+        },
+        {
+          "key": "ATL.light.animation",
+          "value": "{type: \"torch\", speed: 2, intensity: 2}",
+          "mode": 2,
+          "priority": 40
+        },
+        {
+          "key": "ATL.light.color",
+          "value": "#f8c377",
+          "mode": 5,
+          "priority": 40
+        },
+        {
+          "key": "ATL.light.alpha",
+          "value": "0.4",
+          "mode": 5,
+          "priority": 40
+        }
+      ],
+      "disabled": true,
+      "duration": {
+        "startTime": null,
+        "seconds": 21600,
+        "combat": null,
+        "rounds": null,
+        "turns": null,
+        "startRound": null,
+        "startTurn": null
+      },
+      "origin": "Item.Yit7gV08sqkp2Pkq",
+      "tint": "#ffffff",
+      "transfer": true,
+      "_stats": {
+        "coreVersion": "12.324",
+        "systemId": null,
+        "systemVersion": null,
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null,
+        "compendiumSource": null,
+        "duplicateSource": null
+      },
+      "name": "Lamp (No preset)",
+      "img": "icons/commodities/treasure/lantern-stone-grey.webp",
+      "type": "base",
+      "system": {},
+      "description": "",
+      "statuses": [],
+      "sort": 0,
+      "_key": "!items.effects!gWyWIB5mFSsB9u0M.HmVtWWjCq26FlwOR"
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "flags": {
+    "betterRolls5e": {
+      "quickOther": {
+        "context": "",
+        "value": true,
+        "altValue": true
+      },
+      "critRange": {
+        "value": null
+      },
+      "critDamage": {
+        "value": ""
+      },
+      "quickDesc": {
+        "value": true,
+        "altValue": true
+      },
+      "quickProperties": {
+        "value": true,
+        "altValue": true
+      },
+      "quickTemplate": {
+        "value": true,
+        "altValue": true
+      },
+      "quickFlavor": {
+        "value": true,
+        "altValue": true
+      },
+      "quickCharges": {
+        "value": {
+          "quantity": false,
+          "use": true
+        },
+        "altValue": {
+          "quantity": false,
+          "use": true
+        }
+      }
+    },
+    "magicitems": {
+      "enabled": false,
+      "equipped": false,
+      "attuned": false,
+      "charges": "0",
+      "chargeType": "c1",
+      "destroy": false,
+      "destroyFlavorText": "reaches 0 charges: it crumbles into ashes and is destroyed.",
+      "rechargeable": false,
+      "recharge": "0",
+      "rechargeType": "t1",
+      "rechargeUnit": "r1",
+      "sorting": "l"
+    },
+    "midi-qol": {
+      "onUseMacroName": ""
+    },
+    "ATL": {
+      "conversion": 3
+    }
+  },
+  "system": {
+    "description": {
+      "value": "<p>A lamp casts bright light in a 15-foot radius and dim light for an additional 30 feet. Once lit, it burns for 6 hours on a flask (1 pint) of oil</p>",
+      "chat": "",
+      "unidentified": ""
+    },
+    "source": "PHB pg. 152",
+    "quantity": 1,
+    "weight": 0,
+    "price": 0.5,
+    "attunement": 0,
+    "equipped": false,
+    "rarity": "Common",
+    "identified": true,
+    "activation": {
+      "type": "action",
+      "cost": 1,
+      "condition": ""
+    },
+    "duration": {
+      "value": 6,
+      "units": "hour"
+    },
+    "target": {
+      "value": 45,
+      "width": null,
+      "units": "ft",
+      "type": "radius"
+    },
+    "range": {
+      "value": null,
+      "long": null,
+      "units": ""
+    },
+    "uses": {
+      "value": 1,
+      "max": "1",
+      "per": "charges",
+      "autoDestroy": false,
+      "autoUse": true
+    },
+    "consume": {
+      "type": "",
+      "target": "",
+      "amount": null
+    },
+    "ability": "",
+    "actionType": "util",
+    "attackBonus": 0,
+    "chatFlavor": "",
+    "critical": null,
+    "damage": {
+      "parts": [],
+      "versatile": ""
+    },
+    "formula": "",
+    "save": {
+      "ability": "",
+      "dc": null,
+      "scaling": "spell"
+    },
+    "consumableType": "trinket",
+    "attributes": {
+      "spelldc": 10
+    }
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "2.0.2",
+    "coreVersion": "12.324",
+    "createdTime": 1662289349715,
+    "modifiedTime": 1662289349715,
+    "lastModifiedBy": "dnd5ebuilder0000",
+    "duplicateSource": null
+  },
+  "_key": "!items!gWyWIB5mFSsB9u0M"
+}

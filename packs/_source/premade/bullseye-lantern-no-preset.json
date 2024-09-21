@@ -1,0 +1,248 @@
+{
+  "_id": "82gVxKJhQwYBceIQ",
+  "name": "Bullseye Lantern (No preset)",
+  "type": "consumable",
+  "img": "/icons/sundries/lights/lantern-iron-yellow.webp",
+  "effects": [
+    {
+      "_id": "RcRIqKakmgxJ2oDN",
+      "flags": {
+        "dae": {
+          "stackable": false,
+          "specialDuration": [],
+          "transfer": true,
+          "macroRepeat": "none"
+        },
+        "ActiveAuras": {
+          "isAura": false,
+          "radius": null,
+          "aura": "None",
+          "alignment": "",
+          "type": "",
+          "ignoreSelf": false,
+          "height": false,
+          "hidden": false,
+          "hostile": false,
+          "onlyOnce": false
+        }
+      },
+      "changes": [
+        {
+          "key": "ATL.light.dim",
+          "value": "120",
+          "mode": 2,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.bright",
+          "value": "60",
+          "mode": 2,
+          "priority": null
+        },
+        {
+          "key": "ATL.lockRotation",
+          "value": "false",
+          "mode": 2,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.angle",
+          "value": "52.5",
+          "mode": 5,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.animation",
+          "value": "{type: \"torch\", speed: 2, intensity: 2}",
+          "mode": 5,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.color",
+          "value": "#f8c377",
+          "mode": 5,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.alpha",
+          "value": "0.4",
+          "mode": 5,
+          "priority": null
+        }
+      ],
+      "disabled": false,
+      "duration": {
+        "startTime": null,
+        "seconds": 21600,
+        "rounds": 1,
+        "combat": null,
+        "turns": null,
+        "startRound": null,
+        "startTurn": null
+      },
+      "origin": "Item.zHAFAkIzbQ23sIBG",
+      "tint": "#ffffff",
+      "transfer": true,
+      "_stats": {
+        "coreVersion": "12.324",
+        "systemId": null,
+        "systemVersion": null,
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null,
+        "compendiumSource": null,
+        "duplicateSource": null
+      },
+      "name": "Bullseye Lantern (No preset)",
+      "img": "icons/sundries/lights/lantern-iron-yellow.webp",
+      "type": "base",
+      "system": {},
+      "description": "",
+      "statuses": [],
+      "sort": 0,
+      "_key": "!items.effects!82gVxKJhQwYBceIQ.RcRIqKakmgxJ2oDN"
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "flags": {
+    "betterRolls5e": {
+      "quickOther": {
+        "context": "",
+        "value": true,
+        "altValue": true
+      },
+      "critRange": {
+        "value": null
+      },
+      "critDamage": {
+        "value": ""
+      },
+      "quickDesc": {
+        "value": true,
+        "altValue": true
+      },
+      "quickProperties": {
+        "value": true,
+        "altValue": true
+      },
+      "quickTemplate": {
+        "value": true,
+        "altValue": true
+      },
+      "quickFlavor": {
+        "value": true,
+        "altValue": true
+      },
+      "quickCharges": {
+        "value": {
+          "quantity": false,
+          "use": true
+        },
+        "altValue": {
+          "quantity": false,
+          "use": true
+        }
+      }
+    },
+    "magicitems": {
+      "enabled": false,
+      "equipped": false,
+      "attuned": false,
+      "charges": "0",
+      "chargeType": "c1",
+      "destroy": false,
+      "destroyFlavorText": "reaches 0 charges: it crumbles into ashes and is destroyed.",
+      "rechargeable": false,
+      "recharge": "0",
+      "rechargeType": "t1",
+      "rechargeUnit": "r1",
+      "sorting": "l"
+    },
+    "midi-qol": {
+      "onUseMacroName": ""
+    },
+    "ATL": {
+      "conversion": 3
+    }
+  },
+  "system": {
+    "description": {
+      "value": "<p>A bullseye lantern casts bright light in a 60-foot cone and dim light for an additional 60 feet. Once lit, it burns for 6 hours on a flask (1 pint) of oil.</p>",
+      "chat": "",
+      "unidentified": ""
+    },
+    "source": "PHB pg. 152",
+    "quantity": 1,
+    "weight": 2,
+    "price": 10,
+    "attunement": 0,
+    "equipped": false,
+    "rarity": "",
+    "identified": true,
+    "activation": {
+      "type": "action",
+      "cost": 1,
+      "condition": ""
+    },
+    "duration": {
+      "value": 6,
+      "units": "hour"
+    },
+    "target": {
+      "value": 120,
+      "width": null,
+      "units": "ft",
+      "type": "cone"
+    },
+    "range": {
+      "value": null,
+      "long": null,
+      "units": ""
+    },
+    "uses": {
+      "value": 1,
+      "max": "1",
+      "per": "charges",
+      "autoDestroy": false,
+      "autoUse": true
+    },
+    "consume": {
+      "type": "",
+      "target": "",
+      "amount": null
+    },
+    "ability": "",
+    "actionType": "util",
+    "attackBonus": 0,
+    "chatFlavor": "",
+    "critical": null,
+    "damage": {
+      "parts": [],
+      "versatile": ""
+    },
+    "formula": "",
+    "save": {
+      "ability": "",
+      "dc": null,
+      "scaling": "spell"
+    },
+    "consumableType": "trinket",
+    "attributes": {
+      "spelldc": 10
+    }
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "2.0.2",
+    "coreVersion": "12.324",
+    "createdTime": 1662289349699,
+    "modifiedTime": 1662289349699,
+    "lastModifiedBy": "dnd5ebuilder0000",
+    "duplicateSource": null
+  },
+  "_key": "!items!82gVxKJhQwYBceIQ"
+}
