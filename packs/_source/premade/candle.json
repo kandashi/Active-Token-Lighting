@@ -1,0 +1,133 @@
+{
+  "_id": "Zh8jEAQusnlL3LMR",
+  "name": "Candle",
+  "type": "consumable",
+  "img": "icons/sundries/lights/candle-unlit-white.webp",
+  "effects": [
+    {
+      "_id": "WtdgeCRYXV3Mslji",
+      "flags": {},
+      "changes": [
+        {
+          "key": "ATL.preset",
+          "mode": 5,
+          "value": "candle",
+          "priority": null
+        }
+      ],
+      "disabled": true,
+      "duration": {
+        "startTime": null,
+        "seconds": 3600,
+        "combat": null,
+        "rounds": null,
+        "turns": null,
+        "startRound": null,
+        "startTurn": null
+      },
+      "origin": "Item.sh2cz4QhVQ67rRoR",
+      "tint": "#ffffff",
+      "transfer": true,
+      "_stats": {
+        "coreVersion": "12.324",
+        "systemId": null,
+        "systemVersion": null,
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null,
+        "compendiumSource": null,
+        "duplicateSource": null
+      },
+      "name": "Candle",
+      "img": null,
+      "type": "base",
+      "system": {},
+      "description": "",
+      "statuses": [],
+      "sort": 0,
+      "_key": "!items.effects!Zh8jEAQusnlL3LMR.WtdgeCRYXV3Mslji"
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "flags": {},
+  "system": {
+    "description": {
+      "value": "<p>For 1 hour, a candle sheds bright light in a 5-foot radius and dim light for an additional 5 feet.</p>",
+      "chat": "",
+      "unidentified": ""
+    },
+    "source": "PHB pg. 151",
+    "quantity": 1,
+    "weight": 0,
+    "price": 0.01,
+    "attunement": 0,
+    "equipped": false,
+    "rarity": "",
+    "identified": true,
+    "activation": {
+      "type": "action",
+      "cost": 1,
+      "condition": ""
+    },
+    "duration": {
+      "value": 1,
+      "units": "hour"
+    },
+    "target": {
+      "value": 10,
+      "width": null,
+      "units": "ft",
+      "type": "radius"
+    },
+    "range": {
+      "value": null,
+      "long": null,
+      "units": ""
+    },
+    "uses": {
+      "value": 1,
+      "max": "1",
+      "per": "charges",
+      "autoDestroy": false,
+      "autoUse": true
+    },
+    "consume": {
+      "type": "",
+      "target": "",
+      "amount": null
+    },
+    "ability": "",
+    "actionType": "util",
+    "attackBonus": 0,
+    "chatFlavor": "",
+    "critical": null,
+    "damage": {
+      "parts": [],
+      "versatile": ""
+    },
+    "formula": "",
+    "save": {
+      "ability": "",
+      "dc": null,
+      "scaling": "spell"
+    },
+    "consumableType": "trinket",
+    "attributes": {
+      "spelldc": 10
+    }
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "2.0.2",
+    "coreVersion": "12.324",
+    "createdTime": 1662289349712,
+    "modifiedTime": 1662289349712,
+    "lastModifiedBy": "dnd5ebuilder0000",
+    "duplicateSource": null
+  },
+  "_key": "!items!Zh8jEAQusnlL3LMR"
+}

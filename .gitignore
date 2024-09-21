@@ -1,2 +1,9 @@
 ATL.lock
-packs/premade/*
+
+# Dependency directory
+node_modules/
+
+# databases
+packs/*
+!packs/_source/
+!packs/*.db

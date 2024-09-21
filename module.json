@@ -21,7 +21,7 @@
     {
       "name": "premade",
       "label": "Token Effects premade",
-      "path": "packs/premade.db",
+      "path": "packs/premade",
       "system": "dnd5e",
       "type": "Item"
     }

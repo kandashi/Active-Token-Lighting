@@ -1,0 +1,258 @@
+{
+  "_id": "D5njiOGPOrpEgNiK",
+  "name": "Torch (No preset)",
+  "type": "consumable",
+  "img": "icons/sundries/lights/torch-black.webp",
+  "effects": [
+    {
+      "_id": "1NyUBzqqE760PG3H",
+      "flags": {
+        "dae": {
+          "stackable": false,
+          "specialDuration": [
+            "None"
+          ],
+          "transfer": true,
+          "macroRepeat": "none"
+        },
+        "ActiveAuras": {
+          "isAura": false,
+          "radius": null,
+          "aura": "None",
+          "alignment": "",
+          "type": "",
+          "ignoreSelf": false,
+          "height": false,
+          "hidden": false,
+          "hostile": false,
+          "onlyOnce": false
+        }
+      },
+      "changes": [
+        {
+          "key": "ATL.light.dim",
+          "value": "40",
+          "mode": 2,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.bright",
+          "value": "20",
+          "mode": 2,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.animation",
+          "value": "{type: \"torch\", speed: 2, intensity: 2}",
+          "mode": 5,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.color",
+          "value": "#f8c377",
+          "mode": 5,
+          "priority": null
+        },
+        {
+          "key": "ATL.light.alpha",
+          "value": "0.4",
+          "mode": 5,
+          "priority": null
+        }
+      ],
+      "disabled": true,
+      "duration": {
+        "startTime": null,
+        "seconds": 3600,
+        "rounds": 1,
+        "combat": null,
+        "turns": null,
+        "startRound": null,
+        "startTurn": null
+      },
+      "origin": "Item.5FSaTgHBmJuWf43E",
+      "tint": "#ffffff",
+      "transfer": true,
+      "_stats": {
+        "coreVersion": "12.324",
+        "systemId": null,
+        "systemVersion": null,
+        "createdTime": null,
+        "modifiedTime": null,
+        "lastModifiedBy": null,
+        "compendiumSource": null,
+        "duplicateSource": null
+      },
+      "name": "Torch (No preset)",
+      "img": "icons/sundries/lights/torch-black.webp",
+      "type": "base",
+      "system": {},
+      "description": "",
+      "statuses": [],
+      "sort": 0,
+      "_key": "!items.effects!D5njiOGPOrpEgNiK.1NyUBzqqE760PG3H"
+    }
+  ],
+  "folder": null,
+  "sort": 0,
+  "flags": {
+    "betterRolls5e": {
+      "quickDamage": {
+        "context": {
+          "0": ""
+        },
+        "value": {
+          "0": true
+        },
+        "altValue": {
+          "0": true
+        }
+      },
+      "quickOther": {
+        "context": "",
+        "value": true,
+        "altValue": true
+      },
+      "critRange": {
+        "value": null
+      },
+      "critDamage": {
+        "value": ""
+      },
+      "quickDesc": {
+        "value": true,
+        "altValue": true
+      },
+      "quickAttack": {
+        "value": true,
+        "altValue": true
+      },
+      "quickProperties": {
+        "value": true,
+        "altValue": true
+      },
+      "quickTemplate": {
+        "value": true,
+        "altValue": true
+      },
+      "quickFlavor": {
+        "value": true,
+        "altValue": true
+      },
+      "quickCharges": {
+        "value": {
+          "quantity": false,
+          "use": true
+        },
+        "altValue": {
+          "quantity": false,
+          "use": true
+        }
+      }
+    },
+    "magicitems": {
+      "enabled": false,
+      "equipped": false,
+      "attuned": false,
+      "charges": "0",
+      "chargeType": "c1",
+      "destroy": false,
+      "destroyFlavorText": "reaches 0 charges: it crumbles into ashes and is destroyed.",
+      "rechargeable": false,
+      "recharge": "0",
+      "rechargeType": "t1",
+      "rechargeUnit": "r1",
+      "sorting": "l"
+    },
+    "midi-qol": {
+      "onUseMacroName": ""
+    },
+    "ATL": {
+      "conversion": 3
+    }
+  },
+  "system": {
+    "description": {
+      "value": "<p>A torch burns for 1 hour, providing bright light in a 20-foot radius and dim light for an additional 20 feet. If you make a melee attack with a burning torch and hit, it deals 1 fire damage.</p>",
+      "chat": "",
+      "unidentified": ""
+    },
+    "source": "PHB pg. 153",
+    "quantity": 1,
+    "weight": 1,
+    "price": 0.01,
+    "attunement": 0,
+    "equipped": false,
+    "rarity": "",
+    "identified": true,
+    "activation": {
+      "type": "action",
+      "cost": 1,
+      "condition": ""
+    },
+    "duration": {
+      "value": 1,
+      "units": "hour"
+    },
+    "target": {
+      "value": 40,
+      "width": null,
+      "units": "ft",
+      "type": "radius"
+    },
+    "range": {
+      "value": null,
+      "long": null,
+      "units": ""
+    },
+    "uses": {
+      "value": 1,
+      "max": "1",
+      "per": "charges",
+      "autoDestroy": false,
+      "autoUse": true
+    },
+    "consume": {
+      "type": "",
+      "target": "",
+      "amount": null
+    },
+    "ability": "str",
+    "actionType": "mwak",
+    "attackBonus": "0",
+    "chatFlavor": "",
+    "critical": null,
+    "damage": {
+      "parts": [
+        [
+          "1",
+          "fire"
+        ]
+      ],
+      "versatile": ""
+    },
+    "formula": "",
+    "save": {
+      "ability": "",
+      "dc": null,
+      "scaling": "spell"
+    },
+    "consumableType": "trinket",
+    "attributes": {
+      "spelldc": 10
+    }
+  },
+  "ownership": {
+    "default": 0
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "2.0.2",
+    "coreVersion": "12.324",
+    "createdTime": 1662289349702,
+    "modifiedTime": 1662289349702,
+    "lastModifiedBy": "dnd5ebuilder0000",
+    "duplicateSource": null
+  },
+  "_key": "!items!D5njiOGPOrpEgNiK"
+}
