@@ -535,6 +535,22 @@ class ATL {
 
 window.ATLUpdate = ATLUpdate
 
-Hooks.on('init', ATL.init);
-Hooks.on('ready', ATL.ready)
-Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
+Hooks.on('init', () => {
+    ATL.init();
+    if (game.release.generation >= 13) {
+        Hooks.on('getSceneControlButtons', controls => {    
+            if ( !game.user.isGM ) return;
+                controls.lighting.tools.atlLights= {
+                    name: "atlLights",
+                    title: "ATL Presets",
+                    icon: "fas fa-plus-circle",
+                    onChange: (event, active) => ATL.UpdatePresets(),
+                    button: true
+                };
+        });
+    }
+    else {
+        Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons);
+    }
+});
+Hooks.on('ready', ATL.ready);
