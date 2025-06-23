@@ -1,0 +1,41 @@
+<div class="tab scrollable{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <fieldset>
+        <legend>{{localize "TOKEN.SECTIONS.basic"}}</legend>
+        <div class="form-group slim">
+            <label>{{localize "AMBIENT_LIGHT.LABELS.radius"}} <span class="units">({{gridUnits}})</span></label>
+            <div class="form-fields">
+                <label for="{{rootId}}-light.dim">{{lightFields.dim.label}}</label>
+                {{formInput lightFields.dim id=(concat rootId "-light.dim") value=source.light.dim}}
+                <label>{{lightFields.bright.label}}</label>
+                {{formInput lightFields.bright id=(concat rootId "-light.bright") value=source.light.bright}}
+            </div>
+            <p class="hint">{{localize "AMBIENT_LIGHT.LABELS.radiusHint"}}</p>
+        </div>
+
+        {{formGroup lightFields.angle value=source.light.angle classes="slim" units=(localize "Degrees") rootId=rootId}}
+        {{formGroup lightFields.color value=source.light.color rootId=rootId}}
+        {{formGroup lightFields.alpha value=source.light.alpha step=0.05 rootId=rootId}}
+        {{formGroup lightFields.priority value=source.light.priority rootId=rootId}}
+        {{formGroup lightFields.negative value=source.light.negative rootId=rootId}}
+    </fieldset>
+
+    <fieldset>
+        <legend>{{localize "TOKEN.SECTIONS.animation"}}</legend>
+        {{formGroup lightFields.animation.fields.type value=source.light.animation.type
+                    choices=lightAnimations labelAttr="label" blank="None" sort=true rootId=rootId localize=true}}
+        {{formGroup lightFields.animation.fields.speed value=source.light.animation.speed rootId=rootId}}
+        {{formGroup lightFields.animation.fields.reverse value=source.light.animation.reverse rootId=rootId}}
+        {{formGroup lightFields.animation.fields.intensity value=source.light.animation.intensity rootId=rootId}}
+    </fieldset>
+
+    <fieldset {{#if source.light.negative}}disabled{{/if}}>
+        <legend>{{localize "TOKEN.SECTIONS.advanced"}}</legend>
+        {{formGroup lightFields.coloration value=source.light.coloration
+                    choices=colorationTechniques valueAttr="id" labelAttr="label" rootId=rootId localize=true}}
+        {{formGroup lightFields.luminosity value=source.light.luminosity step=0.05 rootId=rootId}}
+        {{formGroup lightFields.attenuation value=source.light.attenuation step=0.05 rootId=rootId}}
+        {{formGroup lightFields.saturation value=source.light.saturation step=0.05 rootId=rootId}}
+        {{formGroup lightFields.contrast value=source.light.contrast step=0.05 rootId=rootId}}
+        {{formGroup lightFields.shadows value=source.light.shadows step=0.05 rootId=rootId}}
+    </fieldset>
+</div>

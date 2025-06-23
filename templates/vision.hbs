@@ -1,0 +1,83 @@
+<div class="tab scrollable{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <fieldset>
+        <legend>{{localize "TOKEN.SightHeaderBasic"}}</legend>
+        {{formGroup sightFields.enabled value=source.sight.enabled rootId=rootId}}
+
+        <div class="form-group slim">
+            <label for="{{rootId}}-sight.range">
+                {{localize "TOKEN.FIELDS.sight.range.label"}}
+                <span class="units">({{gridUnits}})</span>
+            </label>
+            <div class="form-fields">
+                <input type="number" name="sight.range" class="placeholder-fa-solid" value="{{source.sight.range}}"
+                       min="0" step="0.01" placeholder="&#xf534;" id="{{rootId}}-sight.range">
+            </div>
+            <p class="hint">{{localize "TOKEN.FIELDS.sight.range.hint"}}</p>
+        </div>
+
+        {{formGroup sightFields.angle value=source.sight.angle classes="slim" units=(localize "Degrees") rootId=rootId}}
+        {{formGroup sightFields.visionMode value=source.sight.visionMode choices=visionModes rootId=rootId sort=true localize=true}}
+    </fieldset>
+
+    <fieldset>
+        <legend>{{localize "TOKEN.SightHeaderDetection"}}</legend>
+        <header class="detection-mode">
+            <div class="id">{{localize "TOKEN.DetectionMode"}}</div>
+            <div class="range">{{localize "TOKEN.DetectionRange"}} <span class="units">({{gridUnits}})</span></div>
+            <div class="enabled">{{localize "TOKEN.DetectionEnabled"}}</div>
+            <div class="controls">
+                <button type="button" class="inline-control icon fa-solid fa-plus" data-action="addDetectionMode"
+                        data-tooltip aria-label="{{localize "TOKEN.DetectionAdd"}}"></button>
+            </div>
+        </header>
+
+        {{#each preparedDetectionModes as |mode|}}
+        <fieldset class="detection-mode" disabled>
+            <div class="id">
+                <select disabled>
+                    {{selectOptions ../detectionModes selected=mode.id  valueAttr="id" labelAttr="label" sort=true
+                      localize=true}}
+                </select>
+            </div>
+            <div class="range">
+                <input type="number" value="{{mode.range}}" class="placeholder-fa-solid" placeholder="&#xF534;" min="0"
+                       step="any" disabled>
+            </div>
+            <div class="enabled">
+                <input type="checkbox" {{checked mode.enabled}} disabled>
+            </div>
+            <div class="controls"></div>
+        </fieldset>
+        {{/each}}
+
+        {{#each sourceDetectionModes as |mode i|}}
+        <fieldset class="detection-mode" data-index="{{i}}">
+            <div class="id">
+                <select name="detectionModes.{{i}}.id">
+                    {{selectOptions ../detectionModes selected=mode.id valueAttr="id" labelAttr="label" sort=true
+                      localize=true}}
+                </select>
+            </div>
+            <div class="range">
+                <input name="detectionModes.{{i}}.range" type="number" value="{{mode.range}}" class="placeholder-fa-solid" placeholder="&#xF534;" min="0" step="any">
+            </div>
+            <div class="enabled">
+                <input name="detectionModes.{{i}}.enabled" type="checkbox" {{checked mode.enabled}}>
+            </div>
+            <div class="controls">
+                <button type="button" class="inline-control icon fa-solid fa-xmark" data-action="removeDetectionMode"
+                        data-tooltip aria-label="{{localize "TOKEN.DetectionRemove"}}"></button>
+            </div>
+        </fieldset>
+        {{/each}}
+    </fieldset>
+
+    <fieldset>
+        <legend>{{localize "TOKEN.SightHeaderAdvanced"}}</legend>
+        {{formGroup sightFields.color value=source.sight.color rootId=rootId}}
+        {{formGroup sightFields.attenuation value=source.sight.attenuation step=0.05 rootId=rootId}}
+        {{formGroup sightFields.brightness value=source.sight.brightness step=0.05 rootId=rootId}}
+        {{formGroup sightFields.saturation value=source.sight.saturation step=0.05 rootId=rootId}}
+        {{formGroup sightFields.contrast value=source.sight.contrast step=0.05 rootId=rootId}}
+    </fieldset>
+</div>

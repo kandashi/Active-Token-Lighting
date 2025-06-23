@@ -1,0 +1,37 @@
+<div class="tab scrollable{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <div class="form-group">
+        <label>{{localize "Name"}} </label>
+        <div class="form-fields">
+            <input type="text" name="name" value="{{object.name}}" placeholder="Token Name" />
+        </div>
+    </div>
+
+    <div class="form-group slim">
+        <label>{{localize "Coordinates"}} <span class="units">({{localize "Pixels"}})</span></label>
+        <div class="form-fields">
+            <label for="{{rootId}}-x">{{localize "DOCUMENT.FIELDS.x.label"}}</label>
+            {{formInput fields.x value=source.x id=(concat rootId "-x") disabled=(not isGM)
+            placeholder=(localize "Pixels")}}
+            <label for="{{rootId}}-y">{{localize "DOCUMENT.FIELDS.y.label"}}</label>
+            {{formInput fields.y value=source.y id=(concat rootId "-y") disabled=(not isGM)
+            placeholder=(localize "Pixels")}}
+        </div>
+    </div>
+    {{formGroup fields.elevation value=source.elevation classes="slim" units=gridUnits rootId=rootId}}
+    {{formGroup fields.sort value=source.sort classes="slim" rootId=rootId}}
+
+
+    {{formGroup fields.rotation value=source.rotation classes="slim" units=(localize "Degrees") rootId=rootId}}
+    {{formGroup fields.movementAction value=source.movementAction choices=movementActions classes="slim" blank="Default"
+    localize=true rootId=rootId}}
+    {{formGroup fields.occludable.fields.radius value=source.occludable.radius units=gridUnits classes="slim"
+    rootId=rootId}}
+    <div class="form-group slim">
+        <label>{{localize "TOKEN.DISPOSITION"}} </label>
+        <div class="form-fields">
+            <select name="disposition">
+                {{selectOptions dispositions selected=object.disposition localize=true}}
+            </select>
+        </div>
+    </div>
+</div>

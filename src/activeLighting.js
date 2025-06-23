@@ -8,7 +8,7 @@ class ATL {
     static init() {
         let defaultPresets = [
             {
-                name: "torch",
+                label: "torch",
                 light: {
                     dim: 40,
                     bright: 20,
@@ -23,7 +23,7 @@ class ATL {
                 id: "ATLPresetTorch"
             },
             {
-                name: "lantern",
+                label: "lantern",
                 light: {
                     dim: 60,
                     bright: 30,
@@ -39,7 +39,7 @@ class ATL {
 
             },
             {
-                name: "candle",
+                label: "candle",
                 light: {
                     dim: 10,
                     bright: 2,
@@ -55,7 +55,7 @@ class ATL {
 
             },
             {
-                name: "flashlight",
+                label: "flashlight",
                 light: {
                     dim: 60,
                     bright: 30,
@@ -91,6 +91,15 @@ class ATL {
     }
 
     static async ready() {
+        //Update Workaround for change name to label
+        let presets = await game.settings.get("ATL", "presets")
+        for (let preset of presets) {
+            if (!preset.label) {
+                preset.label = preset.name
+                delete preset.name
+            }
+        }
+    
         const newTransferral = game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
         const getEffects = (actor) => {
             if (!actor) return [];
@@ -210,7 +219,7 @@ class ATL {
             content: `
                     <div class="form-group">
                     <label for="presets">Presets:</label>
-                    <select id="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.name}</option>`, '')}</select>
+                    <select id="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.label}</option>`, '')}</select>
                     </div>`,
             buttons: [{
                 action: "update",
@@ -234,14 +243,17 @@ class ATL {
             }],
             submit: async result => {
                 if (result === "update") {
-                    let preset = document.getElementById("presets").value
-                    new PresetConfig(preset).render(true);
+                    let updatePreset = document.getElementById("presets").value
+                    let preset = presets.find(p => p.id === updatePreset)
+                    
+                    new PresetConfig({},preset).render(true);
                 }
                 else if (result === "copy") {
-                    let preset = document.getElementById("presets").value
+                    let updatePreset = document.getElementById("presets").value
+                    let preset = presets.find(p => p.id === updatePreset)
                     preset = deepClone(preset);
                     delete preset.id;
-                    new PresetConfig(preset).render(true);
+                    new PresetConfig({},preset).render(true);
                 }
                 else if (result === "delete") {
                     let preset = document.getElementById("presets").value
@@ -314,7 +326,7 @@ class ATL {
                 if (updateKey === "preset") {
                     // get the matching preset
                     let presetArray = game.settings.get("ATL", "presets")
-                    let preset = presetArray.find(i => i.name === change.value)
+                    let preset = presetArray.find(i => i.label === change.value)
                     if (!preset) {
                         console.error(`ATL: No preset ${change.value} found`)
                         continue;
@@ -332,7 +344,7 @@ class ATL {
                     if ("light.angle" in preset) preset["light.angle"] = parseInt(preset["light.angle"]);
                     // remove preset-specific properties
                     delete preset.id
-                    delete preset.name
+                    delete preset.label
                     console.log("ATE | apply preset", change.value, preset);
                     Object.entries(preset)
                         .forEach(([key, value]) => {

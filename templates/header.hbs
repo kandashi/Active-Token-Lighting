@@ -1,38 +1,13 @@
-<form class="flexcol" autocomplete="off">
 
-  <div class="form-group">
-    <label>Preset Name</label>
-    <input type="text" name="name" value="{{object.name}}" placeholder="New Preset" />
-  </div>
-
-  <!-- Token Configuration Tabs -->
-  <nav class="sheet-tabs tabs" data-group="main" aria-role="{{localize 'SHEETS.FormNavLabel'}}">
-    <a class="item" data-tab="appearance"><i class="fas fa-expand"></i> {{localize "TOKEN.HeaderAppearance"}}</a>
-    <a class="item" data-tab="vision"><i class="fas fa-eye"></i> {{localize "TOKEN.HeaderVision"}}</a>
-    <a class="item" data-tab="light"><i class="fas fa-lightbulb"></i> {{localize "TOKEN.HeaderLight"}}</a>
-  </nav>
-
-  <!-- Token Appearance -->
-  <div class="tab" data-group="main" data-tab="appearance">
-    <div class="form-group slim">
-      <label>{{localize "TOKEN.Dimensions"}} <span class="units">({{localize "GridSpaces"}})</span></label>
-      <div class="form-fields">
-        <label>{{localize "Width"}}</label>
-        <input type="number" step="0.1" name="width" placeholder="units" value="{{object.width}}" />
-        <label>{{localize "Height"}}</label>
-        <input type="number" step="0.1" name="height" placeholder="units" value="{{object.height}}" />
-      </div>
-    </div>
 
     <div class="form-group">
-      <label>{{localize "Scale"}} <span class="units">({{localize "Ratio"}})</span></label>
-      <div class="form-fields">
-        {{ rangePicker name="scale" value=scale min="0.2" max="3.0" step="0.1" }}
-      </div>
+        <label>Preset Label</label>
+        <div class="form-fields">
+            <input type="text" name="label" value="{{object.label}}" placeholder="New Preset" />
+        </div> 
     </div>
-  </div>
 
-  <!-- Token Vision -->
+{{!--   <!-- Token Vision -->
   <div class="tab" data-group="main" data-tab="vision">
     <!-- just the Basic Configuration items for now -->
 
@@ -56,7 +31,7 @@
       <label>{{ localize "TOKEN.VisionMode"}}</label>
       <div class="form-fields">
         <select name="sight.visionMode">
-          {{selectOptions visionModes selected=object.sight.visionMode nameAttr="id" labelAttr="label"
+          {{selectOptions visionModes selected=object.sight.visionMode valueAttr="id" labelAttr="label"
                           localize=true}}
         </select>
       </div>
@@ -146,7 +121,7 @@
         <label>{{ localize 'LIGHT.ColorationTechnique' }}</label>
         <div class="form-fields">
           <select name="light.coloration" data-dtype="Number">
-            {{selectOptions colorationTechniques selected=object.light.coloration nameAttr="id" labelAttr="label" localize=true}}
+            {{selectOptions colorationTechniques selected=object.light.coloration valueAttr="id" labelAttr="label" localize=true}}
           </select>
         </div>
         <p class="hint">{{ localize 'LIGHT.ColorationTechniqueHint' }}</p>
@@ -192,10 +167,5 @@
         <p class="hint">{{ localize 'LIGHT.ShadowsHint' }}</p>
       </div>
     </div>
-  </div>
+  </div> --}}
 
-  <footer class="sheet-footer">
-    <button type="submit"><i class="fas fa-save"></i> {{ localize "SETTINGS.Save" }}</button>
-  </footer>
-
-</form>
