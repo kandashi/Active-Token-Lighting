@@ -5,32 +5,58 @@
             <input type="text" name="name" value="{{object.name}}" placeholder="Token Name" />
         </div>
     </div>
-
     <div class="form-group slim">
         <label>{{localize "Coordinates"}} <span class="units">({{localize "Pixels"}})</span></label>
         <div class="form-fields">
             <label for="{{rootId}}-x">{{localize "DOCUMENT.FIELDS.x.label"}}</label>
-            {{formInput fields.x value=source.x id=(concat rootId "-x") disabled=(not isGM)
+            {{numberInput fields.x name="x" value="{{object.x}}" id=(concat rootId "-x")
             placeholder=(localize "Pixels")}}
             <label for="{{rootId}}-y">{{localize "DOCUMENT.FIELDS.y.label"}}</label>
-            {{formInput fields.y value=source.y id=(concat rootId "-y") disabled=(not isGM)
+            {{numberInput fields.y name="y" value="{{object.y}}" id=(concat rootId "-y")
             placeholder=(localize "Pixels")}}
         </div>
     </div>
-    {{formGroup fields.elevation value=source.elevation classes="slim" units=gridUnits rootId=rootId}}
-    {{formGroup fields.sort value=source.sort classes="slim" rootId=rootId}}
-
-
-    {{formGroup fields.rotation value=source.rotation classes="slim" units=(localize "Degrees") rootId=rootId}}
-    {{formGroup fields.movementAction value=source.movementAction choices=movementActions classes="slim" blank="Default"
-    localize=true rootId=rootId}}
-    {{formGroup fields.occludable.fields.radius value=source.occludable.radius units=gridUnits classes="slim"
-    rootId=rootId}}
     <div class="form-group slim">
-        <label>{{localize "TOKEN.DISPOSITION"}} </label>
+        <label>{{localize "Elevation"}} <span class="units">({{gridUnits}})</span></label>
+        <div class="form-fields">
+            {{numberInput fields.elevation name="elevation" value="{{object.elevation}}" placeholder="0" units=gridUnits
+            step="any"}}
+        </div>
+    </div>
+    <div class="form-group slim">
+        <label>{{localize "Sort"}}</label>
+        <div class="form-fields">
+            {{numberInput fields.sort name="sort" value="{{object.sort}}" placeholder="0"}}
+        </div>
+    </div>
+    <div class="form-group slim">
+        <label>{{localize "Elevation"}} <span class="units">({{localize "Degrees"}})</span></label>
+        <div class="form-fields">
+            {{numberInput fields.rotation name="rotation" value="{{object.rotation}}" placeholder="0"}}
+        </div>
+    </div>
+    <div class="form-group slim">
+        <label>{{localize "TOKEN.FIELDS.movementAction.label"}} </label>
+        <div class="form-fields">
+            <select name="movementAction">
+                {{selectOptions movementActions selected=object.movementAction blank="" localize=true}}
+            </select>
+        </div>
+    </div>
+    <div class="form-group slim">
+        <label>{{localize "TOKEN.FIELDS.occludable.radius.label"}} <span class="units">({{gridUnits}})</span></label>
+        <div class="form-fields">
+            {{numberInput fields.occludable.fields.radius name="occludable.radius" value="{{object.occludable.radius}}"
+            placeholder="0" units=gridUnits
+            step="any"}}
+        </div>
+        <p class="hint">{{localize "TOKEN.FIELDS.occludable.radius.hint"}}</p>
+    </div>
+    <div class="form-group slim">
+        <label>{{localize "TOKEN.FIELDS.disposition.label"}} </label>
         <div class="form-fields">
             <select name="disposition">
-                {{selectOptions dispositions selected=object.disposition localize=true}}
+                {{selectOptions dispositions selected=object.disposition blank="" localize=true}}
             </select>
         </div>
     </div>

@@ -178,7 +178,7 @@ export class PresetConfig extends HandlebarsApplicationMixin(Application) {
     }
 
     // Remove name change if updating a preset and trying to clear the name
-    //if (!this.newMode && "label" in formData.object && !formData.object.label) delete formData.object.label;
+    if (!this.newMode && "label" in formData.object && !formData.object.label) delete formData.object.label;
 
     // apply the changes to the original preset
     Object.entries(formData.object)
