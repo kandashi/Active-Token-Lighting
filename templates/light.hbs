@@ -4,10 +4,10 @@
         <div class="form-group slim">
             <label>{{localize "AMBIENT_LIGHT.LABELS.radius"}} <span class="units">({{gridUnits}})</span></label>
             <div class="form-fields">
-                <label for="{{rootId}}-light.dim">{{lightFields.dim.label}}</label>
+                <label>{{localize "LIGHT.FIELDS.dim.label" }}</label>
                 <input type="number" name="light.dim" placeholder="{{gridUnits}}" value="{{object.light.dim}}"
                     step="any" />
-                <label>{{lightFields.bright.label}}</label>
+                <label>{{localize "LIGHT.FIELDS.bright.label"}}</label>
                 <input type="number" name="light.bright" placeholder="{{gridUnits}}" value="{{object.light.bright}}"
                     step="any" />
             </div>
@@ -31,7 +31,7 @@
         <div class="form-group">
             <label>{{ localize "LIGHT.FIELDS.alpha.label" }}</label>
             <div class="form-fields">
-                <range-picker id="{{rootId}}-scale" name="light.alpha" value={{object.light.alpha}} min="0" max="1"
+                <range-picker name="light.alpha" value={{object.light.alpha}} min="0" max="1"
                     step="0.05"></range-picker>
             </div>
             <p class="hint">{{ localize 'LIGHT.FIELDS.alpha.hint' }}</p>

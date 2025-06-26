@@ -91,20 +91,6 @@ export class PresetConfig extends HandlebarsApplicationMixin(Application) {
   };
 
   /**
-   * Localized Token Display Modes
-   * @returns {Record<string, string>}
-   */
-  static get DISPLAY_MODES() {
-    TokenApplication.#DISPLAY_MODES ??= Object.entries(CONST.TOKEN_DISPLAY_MODES).reduce((modes, [key, value]) => {
-      modes[value] = game.i18n.localize(`TOKEN.DISPLAY_${key}`);
-      return modes;
-    }, {});
-    return TokenApplication.#DISPLAY_MODES;
-  }
-
-  static #DISPLAY_MODES;
-
-  /**
    * Localized Token Dispositions
    * @returns {Record<string, string>}
    */
@@ -175,6 +161,7 @@ export class PresetConfig extends HandlebarsApplicationMixin(Application) {
       const presets = game.settings.get("ATL", "presets");
       const count = presets?.length;
       formData.object.label = `New Preset (${count + 1})`;
+      this.fieldsChanged.push("label")
     }
 
     // Remove name change if updating a preset and trying to clear the name
@@ -277,7 +264,6 @@ export class PresetConfig extends HandlebarsApplicationMixin(Application) {
 
     // save the field's name that was changed
     const el = event.target;
-    console.log("onChange", el)
     if (el.name) this.fieldsChanged.push(el.name);
     // colorPicker has matching name in the dataset
     else if (el.dataset.edit) this.fieldsChanged.push(el.dataset.edit);

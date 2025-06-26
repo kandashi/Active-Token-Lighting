@@ -2,28 +2,48 @@
     <div class="form-group">
         <label> {{localize "TOKEN.FIELDS.texture.src.label"}}</label>
         <div class="form-fields">
-            <input class="image" type="text" name="texture.src" value="{{object.texture.src}}"
-                placeholder="path/to/image" />
+            <file-picker type="any" name="texture.src" value="{{object.texture.src}}">
+                <input class="image" type="text" placeholder="path/to/image" />
+            </file-picker>
         </div>
     </div>
 
     <div class="form-group slim">
         <label>{{localize "TOKEN.Dimensions"}} <span class="units">({{localize "GridSpaces"}})</span></label>
         <div class="form-fields">
-            <label for="{{rootId}}-width">{{localize "DOCUMENT.FIELDS.width.label"}}</label>
+            <label>{{localize "DOCUMENT.FIELDS.width.label"}}</label>
             <input type="number" step="0.1" name="width" placeholder="units" value="{{object.width}}" />
-            <label for="{{rootId}}-height">{{localize "DOCUMENT.FIELDS.height.label"}}</label>
+            <label>{{localize "DOCUMENT.FIELDS.height.label"}}</label>
             <input type="number" step="0.1" name="height" placeholder="units" value="{{object.height}}" />
         </div>
+    </div>
+
+    {{!-- <div class="form-group">
+        <label>{{localize "TOKEN.FIELDS.shape.label"}}</label>
+        <div class="form-fields">
+            <select name="shape">
+                {{selectOptions shapes selected=object.shape localize=true}}
+            </select>
+        </div>
+        <p class="hint">{{localize "TOKEN.FIELDS.shape.hint"}}</p>
+    </div> --}}
+    <div class="form-group">
+        <label>{{localize "TOKEN.FIELDS.texture.fit.label"}}</label>
+        <div class="form-fields">
+            <select name="texture.fit">
+                {{selectOptions textureFitModes selected=object.texture.fit blank="" localize=true}}
+            </select>
+        </div>
+        <p class="hint">{{localize "TOKEN.FIELDS.texture.fit.hint"}}</p>
     </div>
 
     <div class="form-group slim">
         <label>{{localize "Anchor"}}</label>
         <div class="form-fields">
-            <label for="{{rootId}}-anchorX">{{localize "TOKEN.FIELDS.texture.anchorX.label"}}</label>
+            <label>{{localize "TOKEN.FIELDS.texture.anchorX.label"}}</label>
             <input type="number" step="0.1" name="texture.anchorX" placeholder="0.5"
                 value="{{object.texture.anchorX}}" />
-            <label for="{{rootId}}-anchorY">{{localize "TOKEN.FIELDS.texture.anchorY.label"}}</label>
+            <label>{{localize "TOKEN.FIELDS.texture.anchorY.label"}}</label>
             <input type="number" step="0.1" name="texture.anchorY" placeholder="0.5"
                 value="{{object.texture.anchorY}}" />
         </div>
@@ -31,40 +51,98 @@
     </div>
 
     <div class="form-group">
-        <label for="{{rootId}}-scale">{{localize "Scale"}} <span class="units">({{localize "Ratio"}})</span></label>
+        <label>{{localize "Scale"}} <span class="units">({{localize "Ratio"}})</span></label>
         <div class="form-fields">
-            <range-picker id="{{rootId}}-scale" name="scale" value={{scale}} min="0.2" max="3"
-                step="0.05"></range-picker>
+            <range-picker name="scale" value={{scale}} min="0.2" max="3" step="0.05"></range-picker>
         </div>
     </div>
 
     <div class="form-group slim">
         <label>{{localize "TOKEN.Mirror"}}</label>
         <div class="form-fields">
-            <label class="checkbox" for="{{rootId}}-mirrorX">
+            <label class="checkbox">
                 {{localize "TOKEN.MirrorX"}}
-                <input type="checkbox" id="{{rootId}}-mirrorX" name="mirrorX" {{checked mirrorX}}>
+                <input type="checkbox" name="mirrorX" {{checked mirrorX}}>
             </label>
-            <label class="checkbox" for="{{rootId}}-mirrorY">
+            <label class="checkbox">
                 {{localize "TOKEN.MirrorY"}}
-                <input type="checkbox" id="{{rootId}}-mirrorY" name="mirrorY" {{checked mirrorY}}>
+                <input type="checkbox" name="mirrorY" {{checked mirrorY}}>
             </label>
         </div>
     </div>
 
-    {{!-- {{formGroup fields.texture.fields.tint value=source.texture.tint placeholder="#ffffff" rootId=rootId}}
-    {{formGroup fields.alpha value=source.alpha step=0.05 rootId=rootId}}
-    {{formGroup fields.lockRotation value=source.lockRotation rootId=rootId}}
+    <div class="form-group">
+        <label>{{ localize "TOKEN.FIELDS.texture.tint.label" }}</label>
+        <div class="form-fields">
+            <color-picker name="texture.tint" placeholder="#ffffff" value={{object.texture.tint}}></color-picker>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>{{localize "TOKEN.FIELDS.alpha.label"}}</label>
+        <div class="form-fields">
+            <range-picker name="alpha" {{#if object.alpha}} value="{{object.alpha}}" {{/if}} min="0" max="1"
+                step="0.05"></range-picker>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>{{localize "TOKEN.FIELDS.lockRotation.label"}}</label>
+        <div class="form-fields">
+            <input type="checkbox" name="lockRotation" {{checked object.lockRotation}}>
+        </div>
+        <p class="hint">{{localize "TOKEN.FIELDS.lockRotation.hint"}}</p>
+    </div>
 
     <fieldset>
         <legend>{{localize "TOKEN.RING.SHEET.legend"}}</legend>
-        {{formGroup fields.ring.fields.enabled value=source.ring.enabled rootId=rootId}}
-        {{formGroup fields.ring.fields.colors.fields.ring value=source.ring.colors.ring rootId=rootId}}
-        {{formGroup fields.ring.fields.colors.fields.background value=source.ring.colors.background rootId=rootId}}
-        {{formGroup fields.ring.fields.subject.fields.texture value=source.ring.subject.texture rootId=rootId}}
-        {{formGroup fields.ring.fields.subject.fields.scale value=source.ring.subject.scale max=3 step=0.02
-        rootId=rootId}}
-        {{formGroup fields.ring.fields.effects value=source.ring.effects input=ringEffectsInput stacked=true
-        rootId=rootId}}
-    </fieldset> --}}
+        <div class="form-group">
+            <label>{{localize "TOKEN.FIELDS.ring.enabled.label"}}</label>
+            <div class="form-fields">
+                <input type="checkbox" name="ring.enabled" {{checked object.ring.enabled}}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "TOKEN.FIELDS.ring.colors.ring.label" }}</label>
+            <div class="form-fields">
+                <color-picker name="ring.colors.ring" value={{object.ring.colors.ring}}></color-picker>
+            </div>
+            <p class="hint">{{localize "TOKEN.FIELDS.ring.colors.ring.hint"}}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "TOKEN.FIELDS.ring.colors.background.label" }}</label>
+            <div class="form-fields">
+                <color-picker name="ring.colors.background" value={{object.ring.colors.background}}></color-picker>
+            </div>
+            <p class="hint">{{localize "TOKEN.FIELDS.ring.colors.background.hint"}}</p>
+        </div>
+
+        <div class="form-group">
+            <label> {{localize "TOKEN.FIELDS.ring.subject.texture.label"}}</label>
+            <div class="form-fields">
+                <file-picker type="any" name="ring.subject.texture" value="{{object.ring.subject.texture}}">
+                    <input class="image" type="text" placeholder="path/to/image" />
+                </file-picker>
+            </div>
+            <p class="hint">{{localize "TOKEN.FIELDS.ring.subject.texture.hint"}}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{localize "TOKEN.FIELDS.ring.subject.scale.label"}} </label>
+            <div class="form-fields">
+                <range-picker name="ring.subject.scale" {{#if object.ring.subject.scale}}
+                    value="{{object.ring.subject.scale}}" {{/if}} min="0.5" max="3" step="0.02"></range-picker>
+            </div>
+            <p class="hint">{{localize "TOKEN.FIELDS.ring.subject.scale.hint"}}</p>
+        </div>
+        {{!-- <div class="form-group stacked">
+            <label>{{localize "TOKEN.FIELDS.ring.effects.label"}} </label>
+            <div class="form-fields">
+                {{formGroup fields.ring.fields.effects value=source.ring.effects input=ringEffectsInput stacked=true
+                rootId=rootId}}
+            </div>
+        </div> --}}
+    </fieldset>
 </div>

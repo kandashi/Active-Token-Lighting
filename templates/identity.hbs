@@ -8,10 +8,10 @@
     <div class="form-group slim">
         <label>{{localize "Coordinates"}} <span class="units">({{localize "Pixels"}})</span></label>
         <div class="form-fields">
-            <label for="{{rootId}}-x">{{localize "DOCUMENT.FIELDS.x.label"}}</label>
+            <label>{{localize "DOCUMENT.FIELDS.x.label"}}</label>
             {{numberInput fields.x name="x" value="{{object.x}}" id=(concat rootId "-x")
             placeholder=(localize "Pixels")}}
-            <label for="{{rootId}}-y">{{localize "DOCUMENT.FIELDS.y.label"}}</label>
+            <label>{{localize "DOCUMENT.FIELDS.y.label"}}</label>
             {{numberInput fields.y name="y" value="{{object.y}}" id=(concat rootId "-y")
             placeholder=(localize "Pixels")}}
         </div>
