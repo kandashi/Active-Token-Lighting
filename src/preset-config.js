@@ -157,15 +157,15 @@ export class PresetConfig extends HandlebarsApplicationMixin(Application) {
     for (const key of ["scale", "mirrorX", "mirrorY"]) delete formData.object[key];
 
     // Set default name if creating a new preset with no name
-    if (this.newMode && !formData.object.label) {
+    if (this.newMode && !formData.object.name) {
       const presets = game.settings.get("ATL", "presets");
       const count = presets?.length;
-      formData.object.label = `New Preset (${count + 1})`;
-      this.fieldsChanged.push("label")
+      formData.object.name = `New Preset (${count + 1})`;
+      this.fieldsChanged.push("name")
     }
 
     // Remove name change if updating a preset and trying to clear the name
-    if (!this.newMode && "label" in formData.object && !formData.object.label) delete formData.object.label;
+    if (!this.newMode && "name" in formData.object && !formData.object.name) delete formData.object.name;
 
     // apply the changes to the original preset
     Object.entries(formData.object)

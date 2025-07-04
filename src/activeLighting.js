@@ -8,7 +8,7 @@ class ATL {
     static init() {
         let defaultPresets = [
             {
-                label: "torch",
+                name: "torch",
                 light: {
                     dim: 40,
                     bright: 20,
@@ -23,7 +23,7 @@ class ATL {
                 id: "ATLPresetTorch"
             },
             {
-                label: "lantern",
+                name: "lantern",
                 light: {
                     dim: 60,
                     bright: 30,
@@ -39,7 +39,7 @@ class ATL {
 
             },
             {
-                label: "candle",
+                name: "candle",
                 light: {
                     dim: 10,
                     bright: 2,
@@ -55,7 +55,7 @@ class ATL {
 
             },
             {
-                label: "flashlight",
+                name: "flashlight",
                 light: {
                     dim: 60,
                     bright: 30,
@@ -91,15 +91,15 @@ class ATL {
     }
 
     static async ready() {
-        //Update Workaround for change name to label
+        //Update Workaround 
         let presets = await game.settings.get("ATL", "presets")
         for (let preset of presets) {
-            if (!preset.label) {
-                preset.label = preset.name
-                delete preset.name
+            if (!preset.name) {
+                preset.name = preset.label
+                delete preset.label
             }
         }
-    
+
         const newTransferral = game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
         const getEffects = (actor) => {
             if (!actor) return [];
@@ -215,11 +215,11 @@ class ATL {
         let presetSelector = new foundry.applications.api.DialogV2({
             window: {
                 title: "Preset Selector"
-            },   
+            },
             content: `
                     <div class="form-group">
                     <label for="presets">Presets:</label>
-                    <select id="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.label}</option>`, '')}</select>
+                    <select id="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.name}</option>`, '')}</select>
                     </div>`,
             buttons: [{
                 action: "update",
@@ -245,15 +245,15 @@ class ATL {
                 if (result === "update") {
                     let updatePreset = document.getElementById("presets").value
                     let preset = presets.find(p => p.id === updatePreset)
-                    
-                    new PresetConfig({},preset).render(true);
+
+                    new PresetConfig({}, preset).render(true);
                 }
                 else if (result === "copy") {
                     let updatePreset = document.getElementById("presets").value
                     let preset = presets.find(p => p.id === updatePreset)
                     preset = deepClone(preset);
                     delete preset.id;
-                    new PresetConfig({},preset).render(true);
+                    new PresetConfig({}, preset).render(true);
                 }
                 else if (result === "delete") {
                     let preset = document.getElementById("presets").value
@@ -277,20 +277,33 @@ class ATL {
         });
         presetSelector.render(true)
     }
-    static getSceneControlButtons(buttons) {
-        let tokenButton = buttons.find(b => b.name == "lighting")
 
-        if (tokenButton) {
-            tokenButton.tools.push({
-                name: "atl-lights",
+    static getSceneControlButtons(controls) {
+        if (game.release.generation >= 13) {
+            if (!game.user.isGM) return;
+            controls.lighting.tools.atlLights = {
+                name: "atlLights",
                 title: "ATL Presets",
                 icon: "fas fa-plus-circle",
-                visible: game.user.isGM,
-                onClick: () => ATL.UpdatePresets(),
+                onChange: (event, active) => ATL.UpdatePresets(),
                 button: true
-            });
+            };
+        }
+        else {
+            let tokenButton = controls.find(b => b.name == "lighting")
+            if (tokenButton) {
+                tokenButton.tools.push({
+                    name: "atl-lights",
+                    title: "ATL Presets",
+                    icon: "fas fa-plus-circle",
+                    visible: game.user.isGM,
+                    onClick: () => ATL.UpdatePresets(),
+                    button: true
+                });
+            }
         }
     }
+
     static async applyEffects(entity, effects) {
         if (entity.documentName !== "Actor") return;
         const tokenArray = entity.getActiveTokens();
@@ -326,7 +339,7 @@ class ATL {
                 if (updateKey === "preset") {
                     // get the matching preset
                     let presetArray = game.settings.get("ATL", "presets")
-                    let preset = presetArray.find(i => i.label === change.value)
+                    let preset = presetArray.find(i => i.name === change.value)
                     if (!preset) {
                         console.error(`ATL: No preset ${change.value} found`)
                         continue;
@@ -344,10 +357,11 @@ class ATL {
                     if ("light.angle" in preset) preset["light.angle"] = parseInt(preset["light.angle"]);
                     // remove preset-specific properties
                     delete preset.id
-                    delete preset.label
+                    delete preset.name
                     console.log("ATE | apply preset", change.value, preset);
                     Object.entries(preset)
                         .forEach(([key, value]) => {
+                            if (key === "tokenName") key = "name" //workaround for DAE
                             const originalValue = getProperty(originals, key);
                             applyOverride(key, value, originalValue);
                         });
@@ -542,22 +556,6 @@ class ATL {
 
 window.ATLUpdate = ATLUpdate
 
-Hooks.on('init', () => {
-    ATL.init();
-    if (game.release.generation >= 13) {
-        Hooks.on('getSceneControlButtons', controls => {
-            if (!game.user.isGM) return;
-            controls.lighting.tools.atlLights = {
-                name: "atlLights",
-                title: "ATL Presets",
-                icon: "fas fa-plus-circle",
-                onChange: (event, active) => ATL.UpdatePresets(),
-                button: true
-            };
-        });
-    }
-    else {
-        Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons);
-    }
-});
-Hooks.on('ready', ATL.ready);
+Hooks.on('init', ATL.init);
+Hooks.on('ready', ATL.ready)
+Hooks.on('getSceneControlButtons', ATL.getSceneControlButtons)
