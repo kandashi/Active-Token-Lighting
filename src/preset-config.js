@@ -1,166 +1,200 @@
-/**
- * The Application used for defining a preset configuration that can be used by the `ATL.preset`
- * active effect key. It can handle updating an existing preset as well as creating a new one.
+/* Preset Editor (Application V2)
+ * Usage:
+ *   new PresetConfig(presetObj?).render(true)
+ *   - If presetObj is omitted → create new preset.
+ *   - If presetObj has an id → edit/update existing preset.
  */
-export class PresetConfig extends FormApplication {
-  /**
-   * Create a new application to add/edit a preset.
-   * @param {Object} object The ATL preset, or `undefined` if creating a new one from scratch
-   * @param {FormApplicationOptions} options Application configuration options
-   */
-  constructor(object = {}, options = {}) {
-    super(object, options);
-
-    /**
-     * The token change preset
-     */
-    this.preset = this.object;
-
-    /**
-     * Whether this app is creating a new preset or not
-     */
-    this.newMode = !this.preset.id;
-
-    /**
-     * An array of form field names that were changed
-     */
-    this.fieldsChanged = [];
+export class PresetConfig extends foundry.applications.api.ApplicationV2 {
+  /** @param {object} preset - optional existing preset object */
+  constructor(preset = {}) {
+    super();
+    this._incomingPreset = preset;
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      classes: ["sheet", "preset-config"],
-      title: "ATL Light Editor",
-      template: "modules/ATL/templates/preset-config.hbs",
-      width: 480,
-      height: "auto",
-      tabs: [
-        {
-          navSelector: '.tabs[data-group="main"]',
-          contentSelector: "form",
-          initial: "appearance",
-        },
-        {
-          navSelector: '.tabs[data-group="light"]',
-          contentSelector: '.tab[data-tab="light"]',
-          initial: "basic",
-        },
-      ],
-      closeOnSubmit: true,
-    });
-  }
+  // ---------- ApplicationV2 options ----------
+  static DEFAULT_OPTIONS = {
+    id: "atl-preset-config",
+    title: "ATL Preset",
+    classes: ["atl", "preset-config"],
+    width: 520,
+    height: "auto",
+    resizable: true,
+    modal: true
+  };
 
-  static savePreset(preset) {
-    // put all the presets into a collection
-    const collection = new Collection();
-    let presets = game.settings.get("ATL", "presets");
-    presets.forEach((p) => collection.set(p.id, p));
+  // ---------- Data prep for render ----------
+  async _prepareContext(_options) {
+    // Provide defaults for a new preset
+    const defaults = {
+      id: this._incomingPreset?.id ?? null,
+      name: this._incomingPreset?.name ?? "",
+      light: {
+        dim: getProperty(this._incomingPreset, "light.dim") ?? 40,
+        bright: getProperty(this._incomingPreset, "light.bright") ?? 20,
+        color: getProperty(this._incomingPreset, "light.color") ?? "#ffffff",
+        alpha: getProperty(this._incomingPreset, "light.alpha") ?? 0.5,
+        animation: {
+          type: getProperty(this._incomingPreset, "light.animation.type") ?? "torch",
+          speed: getProperty(this._incomingPreset, "light.animation.speed") ?? 1,
+          intensity: getProperty(this._incomingPreset, "light.animation.intensity") ?? 1
+        }
+      }
+    };
 
-    // add or update in collection
-    if (!preset.id) preset.id = foundry.utils.randomID();
-    collection.set(preset.id, preset);
-
-    // save collection
-    presets = collection.toJSON();
-    game.settings.set("ATL", "presets", presets);
-  }
-
-  getData(options) {
-    const gridUnits = game.system.gridUnits;
-
-    // prepare Preset data
-    const preset = foundry.utils.deepClone(this.object);
+    // animation type options (extend as needed)
+    const animationTypes = [
+      "torch", "pulse", "chroma", "wave", "fog", "sunburst", "dome",
+      "emanation", "hexa", "ghost", "energy", "roiling", "radial",
+      "flicker", "blackHole", "none"
+    ];
 
     return {
-      object: preset,
-      gridUnits: gridUnits || game.i18n.localize("GridUnits"),
-      colorationTechniques: AdaptiveLightingShader.SHADER_TECHNIQUES,
-      visionModes: Object.values(CONFIG.Canvas.visionModes).filter((f) => f.tokenConfig),
-      lightAnimations: Object.entries(CONFIG.Canvas.lightAnimations).reduce(
-        (obj, e) => {
-          obj[e[0]] = game.i18n.localize(e[1].label);
-          return obj;
-        },
-        { "": game.i18n.localize("None") }
-      ),
-      scale: Math.abs(this.object.texture?.scaleX || 1),
+      preset: defaults,
+      isEditing: !!defaults.id,
+      animationTypes
     };
   }
 
-  _getSubmitData(updateData = {}) {
-    const formData = super._getSubmitData(updateData);
+  // ---------- Render HTML ----------
+  async _renderHTML(context, _options) {
+    const p = context.preset;
+    const types = context.animationTypes.map(t =>
+      `<option value="${t}" ${t === p.light.animation.type ? "selected" : ""}>${t}</option>`
+    ).join("");
 
-    // Mirror token scale
-    if ("scale" in formData) {
-      formData["texture.scaleX"] = formData.scale * (formData.mirrorX ? -1 : 1);
-      formData["texture.scaleY"] = formData.scale * (formData.mirrorY ? -1 : 1);
-    }
-    ["scale", "mirrorX", "mirrorY"].forEach((k) => delete formData[k]);
-    if (this.fieldsChanged.includes("scale")) this.fieldsChanged.push("texture.scaleX", "texture.scaleY");
+    return `
+      <div class="atl-preset-editor">
+        <div class="form-group" style="padding: 12px 16px;">
+          <label>Name</label>
+          <input type="text" name="name" value="${foundry.utils.escapeHTML(p.name)}" placeholder="Preset name" />
+        </div>
 
-    // Set default name if creating a new preset with no name
-    if (this.newMode && !formData.name) {
-      const presets = game.settings.get("ATL", "presets");
-      const count = presets?.length;
-      formData.name = `New Preset (${count + 1})`;
-    }
+        <fieldset style="margin: 8px 12px 0; padding: 8px 12px; border-radius: 8px;">
+          <legend>Light</legend>
 
-    // Remove name change if updating a preset and trying to clear the name
-    if (!this.newMode && "name" in formData && !formData.name) delete formData.name;
+          <div class="form-fields" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label>Dim Distance (ft)<input type="number" step="1" min="0" name="light.dim" value="${p.light.dim}"></label>
+            <label>Bright Distance (ft)<input type="number" step="1" min="0" name="light.bright" value="${p.light.bright}"></label>
 
-    return formData;
+            <label>Color<input type="color" name="light.color" value="${p.light.color}"></label>
+            <label>Alpha (0–1)<input type="number" step="0.05" min="0" max="1" name="light.alpha" value="${p.light.alpha}"></label>
+
+            <label>Animation Type
+              <select name="light.animation.type">${types}</select>
+            </label>
+            <label>Animation Speed
+              <input type="number" step="0.1" min="0" name="light.animation.speed" value="${p.light.animation.speed}">
+            </label>
+            <label>Animation Intensity
+              <input type="number" step="0.1" min="0" name="light.animation.intensity" value="${p.light.animation.intensity}">
+            </label>
+          </div>
+        </fieldset>
+
+        <footer class="sheet-footer flexrow" style="gap: 8px; padding: 12px;">
+          <button type="button" data-action="save" class="save"><i class="fas fa-save"></i> Save</button>
+          ${context.isEditing ? `<button type="button" data-action="delete" class="danger"><i class="fas fa-trash-alt"></i> Delete</button>` : ""}
+          <button type="button" data-action="cancel"><i class="fas fa-times"></i> Cancel</button>
+        </footer>
+      </div>`;
   }
 
-  async _onChangeInput(event) {
-    super._onChangeInput(event);
+  // ---------- Inject + listeners ----------
+  async _replaceHTML(elementOrHtml, htmlOrElement, _options) {
+    // Normalize param order (some builds pass html first, element second)
+    let target = elementOrHtml;
+    let content = htmlOrElement;
+    const isEl = (n) => n && typeof n === "object" && n.nodeType === 1;
+    if (typeof target === "string" && isEl(content)) [target, content] = [content, target];
+    if (!isEl(target)) target = this.element;
+    if (!target) return;
 
-    // save the field's name that was changed
-    const el = event.target;
-    if (el.name) this.fieldsChanged.push(el.name);
-    // colorPicker has matching name in the dataset
-    else if (el.dataset.edit) this.fieldsChanged.push(el.dataset.edit);
+    if (typeof content === "string") target.innerHTML = content;
+    else if (isEl(content)) target.replaceChildren(content);
+    else target.innerHTML = String(content ?? "");
+
+    const root = target;
+
+    // Buttons
+    root.querySelector('[data-action="save"]')?.addEventListener("click", () => this._onSave(root));
+    root.querySelector('[data-action="cancel"]')?.addEventListener("click", () => this.close());
+    root.querySelector('[data-action="delete"]')?.addEventListener("click", () => this._onDelete());
   }
 
-  async _updateObject(event, formData) {
-    console.log("ATL |", "_updateObject called with formData:", formData);
+  // ---------- Helpers ----------
+  _readForm(root) {
+    const val = (sel) => root.querySelector(sel)?.value ?? "";
+    const num = (sel, fallback = 0) => {
+      const v = parseFloat(val(sel));
+      return Number.isFinite(v) ? v : fallback;
+    };
 
-    // apply the changes to the original preset
-    Object.entries(formData)
-      .filter(([k, _]) => this.fieldsChanged.includes(k))
-      .forEach(([k, v]) => {
-        if (v === "" || v === null) this._clearProperty(this.preset, k);
-        else foundry.utils.setProperty(this.preset, k, v);
-      });
-    console.log("updated preset:", this.preset);
+    const name = String(val('input[name="name"]')).trim();
 
-    PresetConfig.savePreset(this.preset);
-  }
-
-  _clearProperty(object, key) {
-    let target = object;
-    let cleared = false;
-    let parts;
-
-    // Convert the key to an object reference if it contains dot notation
-    if (key.indexOf(".") !== -1) {
-      parts = key.split(".");
-      key = parts.pop();
-      target = parts.reduce((o, i) => o[i], object);
-    }
-
-    // Update the target
-    if (target && target.hasOwnProperty(key)) {
-      cleared = true;
-      delete target[key];
-      // recursivly call to remove empty objects
-      if (parts) {
-        const remainingKey = parts.join(".");
-        if (object[remainingKey] && isEmpty(object[remainingKey]))
-          this._clearProperty(object, remainingKey);
+    return {
+      // Keep existing id if editing; generate if new
+      id: this._incomingPreset?.id ?? randomID(10),
+      name,
+      light: {
+        dim: num('input[name="light.dim"]', 0),
+        bright: num('input[name="light.bright"]', 0),
+        color: String(val('input[name="light.color"]') || "#ffffff"),
+        alpha: num('input[name="light.alpha"]', 0.5),
+        animation: {
+          type: String(val('select[name="light.animation.type"]') || "none"),
+          speed: num('input[name="light.animation.speed"]', 1),
+          intensity: num('input[name="light.animation.intensity"]', 1)
+        }
       }
+    };
+  }
+
+  async _onSave(root) {
+    const data = this._readForm(root);
+
+    if (!data.name) {
+      ui.notifications.warn("ATL: Please give the preset a name.");
+      return;
     }
 
-    // Return changed status
-    return cleared;
+    // Load current presets
+    const presets = await game.settings.get("ATL", "presets") ?? [];
+
+    // If editing, replace by id; otherwise push
+    const idx = presets.findIndex(p => p.id === data.id);
+    if (idx >= 0) presets[idx] = data;
+    else presets.push(data);
+
+    await game.settings.set("ATL", "presets", presets);
+    ui.notifications.info("ATL: Preset saved.");
+    this.close();
   }
+
+  async _onDelete() {
+    const currentId = this._incomingPreset?.id;
+    if (!currentId) return this.close();
+
+    const confirmed = await Dialog.confirm({
+      title: "Delete Preset",
+      content: `<p>Are you sure you want to delete this preset?</p>`
+    });
+    if (!confirmed) return;
+
+    const presets = await game.settings.get("ATL", "presets") ?? [];
+    const idx = presets.findIndex(p => p.id === currentId);
+    if (idx >= 0) {
+      presets.splice(idx, 1);
+      await game.settings.set("ATL", "presets", presets);
+      ui.notifications.info("ATL: Preset deleted.");
+    }
+    this.close();
+  }
+}
+
+/** Utility: Foundry-style random id (10 chars) if not globally present */
+function randomID(length = 16) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let s = "";
+  for (let i = 0; i < length; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
 }
