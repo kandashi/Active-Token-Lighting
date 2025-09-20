@@ -1,33 +1,38 @@
 {
-  "id": "ATL",
-  "title": "Active Token Effects",
-  "description": "Active Token Effects",
-  "authors": [
-    {
-      "name": "Kandashi"
+    "id": "ATL",
+    "title": "Active Token Effects",
+    "description": "Active Token Effects",
+    "authors": [
+        {
+            "name": "Kandashi"
+        },
+        {
+            "name": "kaelad",
+            "discord": "kaelad#1693"
+        }
+    ],
+    "version": "v0.9.0",
+    "compatibility": {
+        "minimum": 11,
+        "verified": 13
     },
-    {
-      "name": "kaelad",
-      "discord": "kaelad#1693"
-    }
-  ],
-  "version": "0.6.2",
-  "compatibility": {
-    "minimum": 11,
-    "verified": 12
-  },
-  "esmodules": ["src/activeLighting.js", "src/updateManager.js"],
-  "packs": [
-    {
-      "name": "premade",
-      "label": "Token Effects premade",
-      "path": "packs/premade",
-      "system": "dnd5e",
-      "type": "Item"
-    }
-  ],
-  "styles": ["./styles/ATL.css"],
-  "url": "https://github.com/kandashi/Active-Token-Lighting",
-  "manifest": "https://raw.githubusercontent.com/kandashi/Active-Token-Lighting/main/module.json",
-  "download": "https://github.com/kandashi/Active-Token-Lighting/archive/main.zip"
+    "esmodules": [
+        "src/activeLighting.js",
+        "src/updateManager.js"
+    ],
+    "packs": [
+        {
+            "name": "premade",
+            "label": "Token Effects premade",
+            "path": "packs/premade.db",
+            "system": "dnd5e",
+            "type": "Item"
+        }
+    ],
+    "styles": [
+        "./styles/ATL.css"
+    ],
+    "url": "https://github.com/kandashi/Active-Token-Lighting",
+    "manifest": "https://github.com/kandashi/Active-Token-Lighting/releases/latest/download/module.json",
+    "download": "https://github.com/kandashi/Active-Token-Lighting/releases/download/v0.8.1/module.zip"
 }

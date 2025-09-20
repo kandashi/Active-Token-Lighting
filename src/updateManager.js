@@ -17,36 +17,48 @@ export class ATLUpdate {
             }
         }
     }
-    static lightAlphaUpdate() {
-        let presets = duplicate(game.settings.get("ATL", "presets"))
-        for (let preset of presets) {
-            if (!!preset.colorIntensity) {
-                preset.lightAlpha = preset.colorIntensity
-                delete preset.colorIntensity
-            }
-        }
-        new Dialog({
-            title: "ATL Preset Update",
-            content: `Do you wish to mass auto-update your ATL presets, one time choice.<br>
-            Changes: internal change of "colorIntensity" to "lightAlpha"`,
-            buttons: {
-                one: {
-                    label: "Yes",
-                    callback: async () => {
-                        await game.settings.set("ATL", "presets", presets)
-                        await game.settings.set("ATL", "conversion", "0.2.15")
-                    }
-                },
-                two: {
-                    label: "No, I'll update myself",
-                    callback: async () => {
-                        await game.settings.set("ATL", "conversion", "0.2.15")
+    
+    static async lightAlphaUpdate() {
+    const presets = duplicate(game.settings.get("ATL", "presets"));
 
-                    }
-                }
-            }
-        }).render(true)
+    // migrate each preset colorIntensity -> lightAlpha
+    for (const preset of presets) {
+        if (preset?.colorIntensity !== undefined) {
+        preset.lightAlpha = preset.colorIntensity;
+        delete preset.colorIntensity;
+        }
     }
+
+    // Application V2 confirmation dialog (with v1 fallback)
+    const useV2 = foundry?.applications?.api?.DialogV2?.confirm;
+    let confirmed = false;
+
+    if (useV2) {
+        confirmed = await foundry.applications.api.DialogV2.confirm({
+        window: { title: "ATL Preset Update" },
+        content: `<p>Do you wish to mass auto-update your ATL presets? (one-time choice)</p>
+                    <p><strong>Changes:</strong> internal rename of <code>colorIntensity</code> to <code>lightAlpha</code>.</p>`,
+        yes: { label: "Yes" },
+        no:  { label: "No, I'll update myself" },
+        defaultYes: true
+        });
+    } else {
+        // Fallback for older core versions
+        confirmed = await Dialog.confirm({
+        title: "ATL Preset Update",
+        content: `Do you wish to mass auto-update your ATL presets? (one-time choice)<br>
+                    <strong>Changes:</strong> internal rename of "colorIntensity" to "lightAlpha".`
+        });
+    }
+
+    if (confirmed) {
+        await game.settings.set("ATL", "presets", presets);
+        await game.settings.set("ATL", "conversion", "0.2.15");
+    } else {
+        await game.settings.set("ATL", "conversion", "0.2.15");
+    }
+    }
+
 
     static async v9UpdateActor(actor) {
         if (!actor.data.token.actorLink) return
