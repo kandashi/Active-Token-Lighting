@@ -86,7 +86,7 @@ class ATL {
             default: "0.2.15",
             type: String,
         });
-        
+
 
     }
 
@@ -98,7 +98,7 @@ class ATL {
             let effects;
             if (newTransferral) effects = actor.appliedEffects;
             else if (game.system.id === "wfrp4e")
-              effects = actor.actorEffects.filter((e) => !e.disabled && !e.isSuppressed);
+                effects = actor.actorEffects.filter((e) => !e.disabled && !e.isSuppressed);
             else effects = actor.effects.filter((e) => !e.disabled && !e.isSuppressed);
             // only return effects that have some ATL changes in them
             return effects.filter(e => e.changes.some(c => c.key.startsWith("ATL.")));
@@ -270,20 +270,33 @@ class ATL {
         });
         presetSelector.render(true)
     }
-    static getSceneControlButtons(buttons) {
-        let tokenButton = buttons.find(b => b.name == "lighting")
 
-        if (tokenButton) {
-            tokenButton.tools.push({
-                name: "atl-lights",
+    static getSceneControlButtons(controls) {
+        if (game.release.generation >= 13) {
+            if (!game.user.isGM) return;
+            controls.lighting.tools.atlLights = {
+                name: "atlLights",
                 title: "ATL Presets",
                 icon: "fas fa-plus-circle",
-                visible: game.user.isGM,
-                onClick: () => ATL.UpdatePresets(),
+                onChange: (event, active) => ATL.UpdatePresets(),
                 button: true
-            });
+            };
+        }
+        else {
+            let tokenButton = controls.find(b => b.name == "lighting")
+            if (tokenButton) {
+                tokenButton.tools.push({
+                    name: "atl-lights",
+                    title: "ATL Presets",
+                    icon: "fas fa-plus-circle",
+                    visible: game.user.isGM,
+                    onClick: () => ATL.UpdatePresets(),
+                    button: true
+                });
+            }
         }
     }
+    
     static async applyEffects(entity, effects) {
         if (entity.documentName !== "Actor") return;
         const tokenArray = entity.getActiveTokens();
@@ -352,7 +365,7 @@ class ATL {
                         const detectionModes =
                             getProperty(overrides, "detectionModes") ||
                             duplicate(getProperty(originals, "detectionModes")) ||
-                            [];                    
+                            [];
                         // find the existing one or create a new one
                         let dm = detectionModes.find(dm => dm.id === id);
                         if (!dm) {
