@@ -64,7 +64,7 @@ export class ATLUpdate {
                 if (change.key.includes("ATL")) {
                     changeFound = true;
                     updates.push(this.v9UpdateEffect(duplicate(change)))
-                } 
+                }
                 else updates.push(change);
             }
             if (changeFound) {
@@ -209,16 +209,16 @@ export class ATLUpdate {
         return newData
     }
 
-    static async flagBuster(actor){
+    static async flagBuster(actor) {
         console.warn(`Updating ${actor.name}`)
         let flag = actor.getFlag("ATL", "originals")
-        if(!flag) return ui.notifications.notify(`No Flag for ${actor.name}`)
-        let updates = mergeObject(actor.data.token, flag, {inplace: false})
-        await actor.update({token : updates})
+        if (!flag) return ui.notifications.notify(`No Flag for ${actor.name}`)
+        let updates = mergeObject(actor.data.token, flag, { inplace: false })
+        await actor.update({ token: updates })
     }
 
-    static async massFlagUpdate(){
-        for(let actor of game.actors){
+    static async massFlagUpdate() {
+        for (let actor of game.actors) {
             await this.flagBuster(actor)
         }
     }
@@ -351,7 +351,7 @@ export class ATLUpdate {
             if (brightness !== 0)
                 changes.push({ key: "ATL.sight.brightness", value: brightness, mode, priority });
         }
-        
+
         if (changeFound) return changes;
     }
 }

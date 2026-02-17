@@ -1,7 +1,7 @@
 import { PresetConfig } from "./preset-config.js";
 import { ATLUpdate } from "./updateManager.js";
 
-const { deepClone, duplicate, flattenObject, getProperty, hasProperty, mergeObject, setProperty } = foundry.utils;
+const { deepClone, duplicate, flattenObject, getProperty, hasProperty, mergeObject, setProperty, getType } = foundry.utils;
 
 class ATL {
 
@@ -91,6 +91,15 @@ class ATL {
     }
 
     static async ready() {
+        //Update Workaround 
+        let presets = await game.settings.get("ATL", "presets")
+        for (let preset of presets) {
+            if (!preset.name) {
+                preset.name = preset.label
+                delete preset.label
+            }
+        }
+
         const newTransferral = game.release.generation >= 11 && !CONFIG.ActiveEffect.legacyTransferral;
         const getEffects = (actor) => {
             if (!actor) return [];
@@ -204,68 +213,66 @@ class ATL {
 
     static async UpdatePresets() {
         let presets = await game.settings.get("ATL", "presets")
-        let content = `<div><select name="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.name}</option>`, '')}</select></div>`
-        let presetSelector = new Dialog({
-            title: "Preset Selector",
+        let presetSelector = new foundry.applications.api.DialogV2({
+            window: {
+                title: "Preset Selector"
+            },
             content: `
-        <div class="form group">
-        <label> Presets: </label>
-        ${content}
-        </div>`,
-            content,
-            buttons: {
-                one: {
-                    label: "Update",
-                    icon: `<i class="fas fa-edit"></i>`,
-                    callback: (html) => {
-                        let updatePreset = html.find("[name=presets]")[0].value;
-                        let preset = presets.find(p => p.id === updatePreset)
-                        new PresetConfig(preset).render(true);
+                    <div class="form-group">
+                    <label for="presets">Presets:</label>
+                    <select id="presets">${presets.reduce((acc, preset) => acc += `<option value = ${preset.id}>${preset.name}</option>`, '')}</select>
+                    </div>`,
+            buttons: [{
+                action: "update",
+                label: "Update",
+                icon: `<i class="fas fa-edit"></i>`,
+            },
+            {
+                action: "copy",
+                label: "Create Copy",
+                icon: `<i class="fas fa-copy"></i>`,
+            },
+            {
+                action: "delete",
+                label: "Delete",
+                icon: `<i class="fas fa-trash-alt"></i>`,
+            },
+            {
+                action: "new",
+                label: "Add New",
+                icon: `<i class="fas fa-plus"></i>`,
+            }],
+            submit: async result => {
+                if (result === "update") {
+                    let updatePreset = document.getElementById("presets").value
+                    let preset = presets.find(p => p.id === updatePreset)
+
+                    new PresetConfig({}, preset).render(true);
+                }
+                else if (result === "copy") {
+                    let updatePreset = document.getElementById("presets").value
+                    let preset = presets.find(p => p.id === updatePreset)
+                    preset = deepClone(preset);
+                    delete preset.id;
+                    new PresetConfig({}, preset).render(true);
+                }
+                else if (result === "delete") {
+                    let preset = document.getElementById("presets").value
+                    let index = presets.findIndex(p => p.id === preset);
+                    const proceed = await foundry.applications.api.DialogV2.confirm({
+                        window: {
+                            title: "Conformation"
+                        },
+                        content: `Are you sure you want to remove this preset`,
+                    })
+                    if (proceed) {
+                        presets.splice(index, 1);
+                        game.settings.set("ATL", "presets", presets);
                     }
-                },
-                two: {
-                    label: "Create Copy",
-                    icon: `<i class="fas fa-copy"></i>`,
-                    callback: (html) => {
-                        let updatePreset = html.find("[name=presets]")[0].value;
-                        let preset = presets.find(p => p.id === updatePreset)
-                        // copy and remove ID so it's created as new
-                        preset = deepClone(preset);
-                        delete preset.id;
-                        new PresetConfig(preset).render(true);
-                    }
-                },
-                three: {
-                    label: "Delete",
-                    icon: `<i class="fas fa-trash-alt"></i>`,
-                    callback: (html) => {
-                        let updatePreset = html.find("[name=presets]")[0].value;
-                        let index = presets.findIndex(p => p.id === updatePreset);
-                        new Dialog({
-                            title: "Conformation",
-                            content: `Are you sure you want to remove this preset`,
-                            buttons: {
-                                one: {
-                                    label: "Confirm",
-                                    icon: `<i class="fas fa-check"></i>`,
-                                    callback: () => {
-                                        presets.splice(index, 1);
-                                        game.settings.set("ATL", "presets", presets);
-                                    }
-                                },
-                                two: {
-                                    label: "Return",
-                                    icon: `<i class="fas fa-undo-alt"></i>`,
-                                    callback: () => presetSelector.render(true)
-                                }
-                            }
-                        }).render(true)
-                    }
-                },
-                four: {
-                    label: "Add New",
-                    icon: `<i class="fas fa-plus"></i>`,
-                    callback: () => new PresetConfig().render(true)
+                    //else presetSelector.render(true);
+                }
+                else if (result === "new") {
+                    new PresetConfig().render(true);
                 }
             }
         });
@@ -340,6 +347,7 @@ class ATL {
                     console.log("ATE | apply preset", change.value, preset);
                     Object.entries(preset)
                         .forEach(([key, value]) => {
+                            if (key === "tokenName") key = "name" //workaround for DAE
                             const originalValue = getProperty(originals, key);
                             applyOverride(key, value, originalValue);
                         });

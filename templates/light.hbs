@@ -1,0 +1,150 @@
+<div class="tab scrollable{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <fieldset>
+        <legend>{{localize "TOKEN.SECTIONS.basic"}}</legend>
+        <div class="form-group slim">
+            <label>{{localize "AMBIENT_LIGHT.LABELS.radius"}} <span class="units">({{gridUnits}})</span></label>
+            <div class="form-fields">
+                <label>{{localize "LIGHT.FIELDS.dim.label" }}</label>
+                <input type="number" name="light.dim" placeholder="{{gridUnits}}" value="{{object.light.dim}}"
+                    step="any" />
+                <label>{{localize "LIGHT.FIELDS.bright.label"}}</label>
+                <input type="number" name="light.bright" placeholder="{{gridUnits}}" value="{{object.light.bright}}"
+                    step="any" />
+            </div>
+            <p class="hint">{{localize "AMBIENT_LIGHT.LABELS.radiusHint"}}</p>
+        </div>
+        <div class="form-group slim">
+            <label>{{localize "LIGHT.FIELDS.angle.label" }} <span class="units">({{localize "Degrees"}})</span></label>
+            <div class="form-fields">
+                <input type="number" name="light.angle" value="{{object.light.angle}}" placeholder="{{localize "
+                    Degrees"}}" />
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.angle.hint"}}</p>
+        </div>
+        <div class="form-group">
+            <label>{{ localize "LIGHT.FIELDS.color.label" }}</label>
+            <div class="form-fields">
+                <color-picker name="light.color" value={{object.light.color}}></color-picker>
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.color.hint"}}</p>
+        </div>
+        <div class="form-group">
+            <label>{{ localize "LIGHT.FIELDS.alpha.label" }}</label>
+            <div class="form-fields">
+                <range-picker name="light.alpha" value={{object.light.alpha}} min="0" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.alpha.hint' }}</p>
+        </div>
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.priority.label" }} </label>
+            <div class="form-fields">
+                <input type="number" name="light.priority" value="{{object.light.priority }}" />
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.priority.hint"}}</p>
+        </div>
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.negative.label" }} </label>
+            <div class="form-fields">
+                <input type="checkbox" name="light.negative" {{checked object.light.negative}} />
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.negative.hint"}}</p>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>{{localize "TOKEN.SECTIONS.animation"}}</legend>
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.animation.type.label"}}</label>
+            <div class="form-fields">
+                <select name="light.animation.type">
+                    {{selectOptions lightAnimations selected=object.light.animation.type localize=true}}
+                </select>
+            </div>
+        </div>
+        {{!-- {{formGroup lightFields.animation.fields.type value=source.light.animation.type
+        choices=lightAnimations labelAttr="label" blank="None" sort=true rootId=rootId localize=true}} --}}
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.animation.speed.label"}}</label>
+            <div class="form-fields">
+                <range-picker name="light.animation.speed" value={{object.light.animation.speed}} min="0" max="10"
+                    step="1"></range-picker>
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.animation.speed.hint"}}</p>
+        </div>
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.animation.reverse.label"}}</label>
+            <div class="form-fields">
+                <input type="checkbox" name="light.animation.reverse" {{checked object.light.animation.reverse}} />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "LIGHT.FIELDS.animation.intensity.label"}}</label>
+            <div class="form-fields">
+                <range-picker name="light.animation.intensity" value={{object.light.animation.intensity}} min="1"
+                    max="10" step="1"></range-picker>
+            </div>
+            <p class="hint">{{localize "LIGHT.FIELDS.animation.intensity.hint"}}</p>
+        </div>
+    </fieldset>
+
+    <fieldset {{#if object.light.negative}}disabled{{/if}}>
+        <legend>{{localize "TOKEN.SECTIONS.advanced"}}</legend>
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.coloration.label' }}</label>
+            <div class="form-fields">
+                <select name="light.coloration" data-dtype="Number">
+                    {{selectOptions colorationTechniques selected=object.light.coloration valueAttr="id"
+                    labelAttr="label"
+                    localize=true}}
+                </select>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.coloration.hint' }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.luminosity.label' }}</label>
+            <div class="form-fields">
+                <range-picker name="light.luminosity" value={{object.light.luminosity}} min="0" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.luminosity.hint' }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.attenuation.label' }}</label>
+            <div class="form-fields">
+                <range-picker name="light.attenuation" value={{object.light.attenuation}} min="0" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.attenuation.hint' }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.saturation.label' }}</label>
+            <div class="form-fields">
+                <range-picker name="light.saturation" value={{object.light.saturation}} min="-1" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.saturation.hint' }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.contrast.label' }}</label>
+            <div class="form-fields">
+                <range-picker name="light.contrast" value={{object.light.contrast}} min="-1" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.contrast.hint' }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize 'LIGHT.FIELDS.shadows.label' }}</label>
+            <div class="form-fields">
+                <range-picker name="light.shadows" value={{object.light.shadows}} min="0" max="1"
+                    step="0.05"></range-picker>
+            </div>
+            <p class="hint">{{ localize 'LIGHT.FIELDS.shadows.hint' }}</p>
+        </div>
+    </fieldset>
+</div>
